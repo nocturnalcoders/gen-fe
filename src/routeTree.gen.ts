@@ -17,6 +17,7 @@ import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiasporaRouteImport } from './routes/diaspora'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ArticlesRouteImport } from './routes/articles'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivegenRouteImport } from './routes/activegen'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -60,6 +61,11 @@ const ArticlesRoute = ArticlesRouteImport.update({
   path: '/articles',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ActivegenRoute = ActivegenRouteImport.update({
   id: '/activegen',
   path: '/activegen',
@@ -74,6 +80,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activegen': typeof ActivegenRoute
+  '/admin': typeof AdminRoute
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activegen': typeof ActivegenRoute
+  '/admin': typeof AdminRoute
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/activegen': typeof ActivegenRoute
+  '/admin': typeof AdminRoute
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/activegen'
+    | '/admin'
     | '/articles'
     | '/dashboard'
     | '/diaspora'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/activegen'
+    | '/admin'
     | '/articles'
     | '/dashboard'
     | '/diaspora'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/activegen'
+    | '/admin'
     | '/articles'
     | '/dashboard'
     | '/diaspora'
@@ -150,6 +162,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivegenRoute: typeof ActivegenRoute
+  AdminRoute: typeof AdminRoute
   ArticlesRoute: typeof ArticlesRoute
   DashboardRoute: typeof DashboardRoute
   DiasporaRoute: typeof DiasporaRoute
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticlesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/activegen': {
       id: '/activegen'
       path: '/activegen'
@@ -238,6 +258,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivegenRoute: ActivegenRoute,
+  AdminRoute: AdminRoute,
   ArticlesRoute: ArticlesRoute,
   DashboardRoute: DashboardRoute,
   DiasporaRoute: DiasporaRoute,
