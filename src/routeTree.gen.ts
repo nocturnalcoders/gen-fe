@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MentorshipRouteImport } from './routes/mentorship'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as EventsRouteImport } from './routes/events'
@@ -18,6 +19,11 @@ import { Route as ArticlesRouteImport } from './routes/articles'
 import { Route as ActivegenRouteImport } from './routes/activegen'
 import { Route as IndexRouteImport } from './routes/index'
 
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MentorshipRoute = MentorshipRouteImport.update({
   id: '/mentorship',
   path: '/mentorship',
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRoute
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
+  '/notifications': typeof NotificationsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRoute
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
+  '/notifications': typeof NotificationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/events': typeof EventsRoute
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
+  '/notifications': typeof NotificationsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/members'
     | '/mentorship'
+    | '/notifications'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/members'
     | '/mentorship'
+    | '/notifications'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/members'
     | '/mentorship'
+    | '/notifications'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,10 +144,18 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRoute
   MembersRoute: typeof MembersRoute
   MentorshipRoute: typeof MentorshipRoute
+  NotificationsRoute: typeof NotificationsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mentorship': {
       id: '/mentorship'
       path: '/mentorship'
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRoute,
   MembersRoute: MembersRoute,
   MentorshipRoute: MentorshipRoute,
+  NotificationsRoute: NotificationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
