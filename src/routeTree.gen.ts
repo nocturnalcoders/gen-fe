@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as MentorshipRouteImport } from './routes/mentorship'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ArticlesRouteImport } from './routes/articles'
+import { Route as ActivegenRouteImport } from './routes/activegen'
 import { Route as IndexRouteImport } from './routes/index'
 
 const MentorshipRoute = MentorshipRouteImport.update({
@@ -29,6 +30,11 @@ const ArticlesRoute = ArticlesRouteImport.update({
   path: '/articles',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ActivegenRoute = ActivegenRouteImport.update({
+  id: '/activegen',
+  path: '/activegen',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,12 +43,14 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/activegen': typeof ActivegenRoute
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
   '/mentorship': typeof MentorshipRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/activegen': typeof ActivegenRoute
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
   '/mentorship': typeof MentorshipRoute
@@ -50,20 +58,28 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/activegen': typeof ActivegenRoute
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
   '/mentorship': typeof MentorshipRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/articles' | '/dashboard' | '/mentorship'
+  fullPaths: '/' | '/activegen' | '/articles' | '/dashboard' | '/mentorship'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/articles' | '/dashboard' | '/mentorship'
-  id: '__root__' | '/' | '/articles' | '/dashboard' | '/mentorship'
+  to: '/' | '/activegen' | '/articles' | '/dashboard' | '/mentorship'
+  id:
+    | '__root__'
+    | '/'
+    | '/activegen'
+    | '/articles'
+    | '/dashboard'
+    | '/mentorship'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActivegenRoute: typeof ActivegenRoute
   ArticlesRoute: typeof ArticlesRoute
   DashboardRoute: typeof DashboardRoute
   MentorshipRoute: typeof MentorshipRoute
@@ -92,6 +108,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticlesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/activegen': {
+      id: '/activegen'
+      path: '/activegen'
+      fullPath: '/activegen'
+      preLoaderRoute: typeof ActivegenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +127,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActivegenRoute: ActivegenRoute,
   ArticlesRoute: ArticlesRoute,
   DashboardRoute: DashboardRoute,
   MentorshipRoute: MentorshipRoute,
