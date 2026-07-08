@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as MentorshipRouteImport } from './routes/mentorship'
+import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiasporaRouteImport } from './routes/diaspora'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ArticlesRouteImport } from './routes/articles'
@@ -19,6 +20,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const MentorshipRoute = MentorshipRouteImport.update({
   id: '/mentorship',
   path: '/mentorship',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsRoute = EventsRouteImport.update({
+  id: '/events',
+  path: '/events',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiasporaRoute = DiasporaRouteImport.update({
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
+  '/events': typeof EventsRoute
   '/mentorship': typeof MentorshipRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
+  '/events': typeof EventsRoute
   '/mentorship': typeof MentorshipRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
+  '/events': typeof EventsRoute
   '/mentorship': typeof MentorshipRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +89,7 @@ export interface FileRouteTypes {
     | '/articles'
     | '/dashboard'
     | '/diaspora'
+    | '/events'
     | '/mentorship'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,6 +98,7 @@ export interface FileRouteTypes {
     | '/articles'
     | '/dashboard'
     | '/diaspora'
+    | '/events'
     | '/mentorship'
   id:
     | '__root__'
@@ -96,6 +107,7 @@ export interface FileRouteTypes {
     | '/articles'
     | '/dashboard'
     | '/diaspora'
+    | '/events'
     | '/mentorship'
   fileRoutesById: FileRoutesById
 }
@@ -105,6 +117,7 @@ export interface RootRouteChildren {
   ArticlesRoute: typeof ArticlesRoute
   DashboardRoute: typeof DashboardRoute
   DiasporaRoute: typeof DiasporaRoute
+  EventsRoute: typeof EventsRoute
   MentorshipRoute: typeof MentorshipRoute
 }
 
@@ -115,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/mentorship'
       fullPath: '/mentorship'
       preLoaderRoute: typeof MentorshipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events': {
+      id: '/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof EventsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/diaspora': {
@@ -161,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   ArticlesRoute: ArticlesRoute,
   DashboardRoute: DashboardRoute,
   DiasporaRoute: DiasporaRoute,
+  EventsRoute: EventsRoute,
   MentorshipRoute: MentorshipRoute,
 }
 export const routeTree = rootRouteImport
