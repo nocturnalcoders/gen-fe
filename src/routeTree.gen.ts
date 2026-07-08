@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as MentorshipRouteImport } from './routes/mentorship'
+import { Route as DiasporaRouteImport } from './routes/diaspora'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ArticlesRouteImport } from './routes/articles'
 import { Route as ActivegenRouteImport } from './routes/activegen'
@@ -18,6 +19,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const MentorshipRoute = MentorshipRouteImport.update({
   id: '/mentorship',
   path: '/mentorship',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiasporaRoute = DiasporaRouteImport.update({
+  id: '/diaspora',
+  path: '/diaspora',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/activegen': typeof ActivegenRoute
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
+  '/diaspora': typeof DiasporaRoute
   '/mentorship': typeof MentorshipRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/activegen': typeof ActivegenRoute
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
+  '/diaspora': typeof DiasporaRoute
   '/mentorship': typeof MentorshipRoute
 }
 export interface FileRoutesById {
@@ -61,19 +69,33 @@ export interface FileRoutesById {
   '/activegen': typeof ActivegenRoute
   '/articles': typeof ArticlesRoute
   '/dashboard': typeof DashboardRoute
+  '/diaspora': typeof DiasporaRoute
   '/mentorship': typeof MentorshipRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/activegen' | '/articles' | '/dashboard' | '/mentorship'
+  fullPaths:
+    | '/'
+    | '/activegen'
+    | '/articles'
+    | '/dashboard'
+    | '/diaspora'
+    | '/mentorship'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/activegen' | '/articles' | '/dashboard' | '/mentorship'
+  to:
+    | '/'
+    | '/activegen'
+    | '/articles'
+    | '/dashboard'
+    | '/diaspora'
+    | '/mentorship'
   id:
     | '__root__'
     | '/'
     | '/activegen'
     | '/articles'
     | '/dashboard'
+    | '/diaspora'
     | '/mentorship'
   fileRoutesById: FileRoutesById
 }
@@ -82,6 +104,7 @@ export interface RootRouteChildren {
   ActivegenRoute: typeof ActivegenRoute
   ArticlesRoute: typeof ArticlesRoute
   DashboardRoute: typeof DashboardRoute
+  DiasporaRoute: typeof DiasporaRoute
   MentorshipRoute: typeof MentorshipRoute
 }
 
@@ -92,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/mentorship'
       fullPath: '/mentorship'
       preLoaderRoute: typeof MentorshipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diaspora': {
+      id: '/diaspora'
+      path: '/diaspora'
+      fullPath: '/diaspora'
+      preLoaderRoute: typeof DiasporaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -130,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActivegenRoute: ActivegenRoute,
   ArticlesRoute: ArticlesRoute,
   DashboardRoute: DashboardRoute,
+  DiasporaRoute: DiasporaRoute,
   MentorshipRoute: MentorshipRoute,
 }
 export const routeTree = rootRouteImport
