@@ -1,10 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/layout/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/events")({
   component: EventsPage,
@@ -17,15 +20,36 @@ export const Route = createFileRoute("/events")({
   }),
 });
 
-const events = [
-  { type: "Workshop", title: "Portfolio Reviews for Designers", date: "Jul 22 · 19:00", loc: "Online", seats: 40 },
-  { type: "Webinar", title: "Fundraising 101 for Indonesian Founders", date: "Jul 27 · 20:00", loc: "Online", seats: 500 },
-  { type: "Bootcamp", title: "Full-stack TypeScript — 4-week intensive", date: "Aug 1 - Aug 28", loc: "Hybrid", seats: 30 },
-  { type: "Meetup", title: "Product People — Jakarta", date: "Aug 5 · 18:30", loc: "Jakarta", seats: 120 },
-  { type: "Hackathon", title: "GarudaHacks — Build for Diaspora", date: "Sep 12 - Sep 14", loc: "Bandung + Online", seats: 200 },
-];
+type EventRow = {
+  id: string;
+  title: string;
+  event_type: string;
+  event_date: string;
+  location: string;
+  capacity: number;
+  joined: number;
+};
+
+async function fetchEvents(): Promise<EventRow[]> {
+  const { data, error } = await supabase
+    .from("events")
+    .select("id, title, event_type, event_date, location, capacity, registrations(count)")
+    .order("event_date", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((e: any) => ({
+    id: e.id,
+    title: e.title,
+    event_type: e.event_type,
+    event_date: e.event_date,
+    location: e.location,
+    capacity: e.capacity,
+    joined: e.registrations?.[0]?.count ?? 0,
+  }));
+}
 
 function EventsPage() {
+  const { data: events = [], isLoading } = useQuery({ queryKey: ["events"], queryFn: fetchEvents });
+
   return (
     <PageShell>
       <PageHeader
@@ -37,23 +61,33 @@ function EventsPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="grid gap-5 sm:grid-cols-2">
-          {events.map((e) => (
-            <Card key={e.title} className="glass overflow-hidden rounded-2xl border-border/50 shadow-soft">
-              <div className="relative flex h-28 items-center justify-center bg-hero-gradient text-white">
-                <Badge className="absolute left-3 top-3 border-white/20 bg-white/15 backdrop-blur">{e.type}</Badge>
-                <div className="font-display text-xl font-semibold opacity-90">{e.date.split(" · ")[0]}</div>
-              </div>
-              <div className="p-5">
-                <h3 className="font-semibold leading-snug">{e.title}</h3>
-                <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1.5"><Calendar className="size-3.5" /> {e.date}</div>
-                  <div className="flex items-center gap-1.5"><MapPin className="size-3.5" /> {e.loc}</div>
-                  <div className="flex items-center gap-1.5"><Users className="size-3.5" /> {e.seats} seats</div>
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading events…</p>
+          ) : (
+            events.map((e) => (
+              <Card key={e.id} className="glass overflow-hidden rounded-2xl border-border/50 shadow-soft">
+                <Link to="/events/$id" params={{ id: e.id }} className="block">
+                  <div className="relative flex h-28 items-center justify-center bg-hero-gradient text-white">
+                    <Badge className="absolute left-3 top-3 border-white/20 bg-white/15 backdrop-blur">{e.event_type}</Badge>
+                    <div className="font-display text-xl font-semibold opacity-90">{format(new Date(e.event_date), "MMM d")}</div>
+                  </div>
+                </Link>
+                <div className="p-5">
+                  <Link to="/events/$id" params={{ id: e.id }}>
+                    <h3 className="font-semibold leading-snug hover:text-primary">{e.title}</h3>
+                  </Link>
+                  <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5"><Calendar className="size-3.5" /> {format(new Date(e.event_date), "EEE, MMM d · HH:mm")}</div>
+                    <div className="flex items-center gap-1.5"><MapPin className="size-3.5" /> {e.location}</div>
+                    <div className="flex items-center gap-1.5"><Users className="size-3.5" /> {e.joined}/{e.capacity} registered</div>
+                  </div>
+                  <Button asChild className="mt-4 w-full">
+                    <Link to="/events/$id" params={{ id: e.id }}>View & register</Link>
+                  </Button>
                 </div>
-                <Button className="mt-4 w-full">Register</Button>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))
+          )}
         </div>
 
         <aside className="space-y-5">
