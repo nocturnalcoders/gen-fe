@@ -1,10 +1,12 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { Bell, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { useState } from "react";
 import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/hooks/use-session";
+import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard" },
@@ -20,6 +22,13 @@ export function SiteNav() {
   const { theme, toggle } = useTheme();
   const [open, setOpen] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { user } = useSession();
+  const router = useRouter();
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    router.invalidate();
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full">
@@ -57,11 +66,22 @@ export function SiteNav() {
             <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={toggle}>
               {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>
-            <Link
-              to="/profile"
-              className="hidden sm:block ml-1 h-9 w-9 rounded-full bg-gold-gradient ring-2 ring-background shadow-soft"
-              aria-label="Profile"
-            />
+            {user ? (
+              <>
+                <Link
+                  to="/profile"
+                  className="hidden sm:block ml-1 h-9 w-9 rounded-full bg-gold-gradient ring-2 ring-background shadow-soft"
+                  aria-label="Profile"
+                />
+                <Button variant="ghost" size="sm" onClick={signOut} className="hidden sm:inline-flex">
+                  Sign out
+                </Button>
+              </>
+            ) : (
+              <Button asChild size="sm" className="hidden sm:inline-flex">
+                <Link to="/auth">Sign in</Link>
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -86,20 +106,19 @@ export function SiteNav() {
                   {item.label}
                 </Link>
               ))}
-              <Link
-                to="/profile"
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
-              >
-                Profile
-              </Link>
-              <Link
-                to="/admin"
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
-              >
-                Admin
-              </Link>
+              {user ? (
+                <>
+                  <Link to="/profile" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent">Profile</Link>
+                  <Link to="/admin" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent">Admin</Link>
+                  <button onClick={() => { setOpen(false); signOut(); }} className="rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-accent">
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <Link to="/auth" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-accent">
+                  Sign in
+                </Link>
+              )}
             </div>
           </div>
         )}

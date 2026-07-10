@@ -17,10 +17,13 @@ import { Route as MembersRouteImport } from './routes/members'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiasporaRouteImport } from './routes/diaspora'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ArticlesRouteImport } from './routes/articles'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivegenRouteImport } from './routes/activegen'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EventsIdRouteImport } from './routes/events.$id'
+import { Route as ActivegenIdRouteImport } from './routes/activegen.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -62,6 +65,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArticlesRoute = ArticlesRouteImport.update({
   id: '/articles',
   path: '/articles',
@@ -82,49 +90,68 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventsIdRoute = EventsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => EventsRoute,
+} as any)
+const ActivegenIdRoute = ActivegenIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ActivegenRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/activegen': typeof ActivegenRoute
+  '/activegen': typeof ActivegenRouteWithChildren
   '/admin': typeof AdminRoute
   '/articles': typeof ArticlesRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
-  '/events': typeof EventsRoute
+  '/events': typeof EventsRouteWithChildren
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/activegen/$id': typeof ActivegenIdRoute
+  '/events/$id': typeof EventsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/activegen': typeof ActivegenRoute
+  '/activegen': typeof ActivegenRouteWithChildren
   '/admin': typeof AdminRoute
   '/articles': typeof ArticlesRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
-  '/events': typeof EventsRoute
+  '/events': typeof EventsRouteWithChildren
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/activegen/$id': typeof ActivegenIdRoute
+  '/events/$id': typeof EventsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/activegen': typeof ActivegenRoute
+  '/activegen': typeof ActivegenRouteWithChildren
   '/admin': typeof AdminRoute
   '/articles': typeof ArticlesRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
-  '/events': typeof EventsRoute
+  '/events': typeof EventsRouteWithChildren
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/activegen/$id': typeof ActivegenIdRoute
+  '/events/$id': typeof EventsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -133,6 +160,7 @@ export interface FileRouteTypes {
     | '/activegen'
     | '/admin'
     | '/articles'
+    | '/auth'
     | '/dashboard'
     | '/diaspora'
     | '/events'
@@ -141,12 +169,15 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/sitemap.xml'
+    | '/activegen/$id'
+    | '/events/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/activegen'
     | '/admin'
     | '/articles'
+    | '/auth'
     | '/dashboard'
     | '/diaspora'
     | '/events'
@@ -155,12 +186,15 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/sitemap.xml'
+    | '/activegen/$id'
+    | '/events/$id'
   id:
     | '__root__'
     | '/'
     | '/activegen'
     | '/admin'
     | '/articles'
+    | '/auth'
     | '/dashboard'
     | '/diaspora'
     | '/events'
@@ -169,16 +203,19 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/sitemap.xml'
+    | '/activegen/$id'
+    | '/events/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ActivegenRoute: typeof ActivegenRoute
+  ActivegenRoute: typeof ActivegenRouteWithChildren
   AdminRoute: typeof AdminRoute
   ArticlesRoute: typeof ArticlesRoute
+  AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
   DiasporaRoute: typeof DiasporaRoute
-  EventsRoute: typeof EventsRoute
+  EventsRoute: typeof EventsRouteWithChildren
   MembersRoute: typeof MembersRoute
   MentorshipRoute: typeof MentorshipRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -244,6 +281,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/articles': {
       id: '/articles'
       path: '/articles'
@@ -272,17 +316,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/events/$id': {
+      id: '/events/$id'
+      path: '/$id'
+      fullPath: '/events/$id'
+      preLoaderRoute: typeof EventsIdRouteImport
+      parentRoute: typeof EventsRoute
+    }
+    '/activegen/$id': {
+      id: '/activegen/$id'
+      path: '/$id'
+      fullPath: '/activegen/$id'
+      preLoaderRoute: typeof ActivegenIdRouteImport
+      parentRoute: typeof ActivegenRoute
+    }
   }
 }
 
+interface ActivegenRouteChildren {
+  ActivegenIdRoute: typeof ActivegenIdRoute
+}
+
+const ActivegenRouteChildren: ActivegenRouteChildren = {
+  ActivegenIdRoute: ActivegenIdRoute,
+}
+
+const ActivegenRouteWithChildren = ActivegenRoute._addFileChildren(
+  ActivegenRouteChildren,
+)
+
+interface EventsRouteChildren {
+  EventsIdRoute: typeof EventsIdRoute
+}
+
+const EventsRouteChildren: EventsRouteChildren = {
+  EventsIdRoute: EventsIdRoute,
+}
+
+const EventsRouteWithChildren =
+  EventsRoute._addFileChildren(EventsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ActivegenRoute: ActivegenRoute,
+  ActivegenRoute: ActivegenRouteWithChildren,
   AdminRoute: AdminRoute,
   ArticlesRoute: ArticlesRoute,
+  AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
   DiasporaRoute: DiasporaRoute,
-  EventsRoute: EventsRoute,
+  EventsRoute: EventsRouteWithChildren,
   MembersRoute: MembersRoute,
   MentorshipRoute: MentorshipRoute,
   NotificationsRoute: NotificationsRoute,
@@ -292,13 +374,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
