@@ -10,34 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MentorshipRouteImport } from './routes/mentorship'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiasporaRouteImport } from './routes/diaspora'
-import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ArticlesRouteImport } from './routes/articles'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivegenRouteImport } from './routes/activegen'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as ActivegenIdRouteImport } from './routes/activegen.$id'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NotificationsRoute = NotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentorshipRoute = MentorshipRouteImport.update({
@@ -60,11 +50,6 @@ const DiasporaRoute = DiasporaRouteImport.update({
   path: '/diaspora',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -73,11 +58,6 @@ const AuthRoute = AuthRouteImport.update({
 const ArticlesRoute = ArticlesRouteImport.update({
   id: '/articles',
   path: '/articles',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ActivegenRoute = ActivegenRouteImport.update({
@@ -100,38 +80,59 @@ const ActivegenIdRoute = ActivegenIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ActivegenRoute,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/_authenticated/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/_authenticated/notifications',
+    path: '/notifications',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/_authenticated/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/_authenticated/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activegen': typeof ActivegenRouteWithChildren
-  '/admin': typeof AdminRoute
   '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
   '/events': typeof EventsRouteWithChildren
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
-  '/notifications': typeof NotificationsRoute
-  '/profile': typeof ProfileRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activegen': typeof ActivegenRouteWithChildren
-  '/admin': typeof AdminRoute
   '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
   '/events': typeof EventsRouteWithChildren
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
-  '/notifications': typeof NotificationsRoute
-  '/profile': typeof ProfileRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
 }
@@ -139,17 +140,17 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/activegen': typeof ActivegenRouteWithChildren
-  '/admin': typeof AdminRoute
   '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
   '/diaspora': typeof DiasporaRoute
   '/events': typeof EventsRouteWithChildren
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
-  '/notifications': typeof NotificationsRoute
-  '/profile': typeof ProfileRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
 }
@@ -158,51 +159,51 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/activegen'
-    | '/admin'
     | '/articles'
     | '/auth'
-    | '/dashboard'
     | '/diaspora'
     | '/events'
     | '/members'
     | '/mentorship'
+    | '/sitemap.xml'
+    | '/admin'
+    | '/dashboard'
     | '/notifications'
     | '/profile'
-    | '/sitemap.xml'
     | '/activegen/$id'
     | '/events/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/activegen'
-    | '/admin'
     | '/articles'
     | '/auth'
-    | '/dashboard'
     | '/diaspora'
     | '/events'
     | '/members'
     | '/mentorship'
+    | '/sitemap.xml'
+    | '/admin'
+    | '/dashboard'
     | '/notifications'
     | '/profile'
-    | '/sitemap.xml'
     | '/activegen/$id'
     | '/events/$id'
   id:
     | '__root__'
     | '/'
     | '/activegen'
-    | '/admin'
     | '/articles'
     | '/auth'
-    | '/dashboard'
     | '/diaspora'
     | '/events'
     | '/members'
     | '/mentorship'
-    | '/notifications'
-    | '/profile'
     | '/sitemap.xml'
+    | '/_authenticated/admin'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/notifications'
+    | '/_authenticated/profile'
     | '/activegen/$id'
     | '/events/$id'
   fileRoutesById: FileRoutesById
@@ -210,17 +211,17 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivegenRoute: typeof ActivegenRouteWithChildren
-  AdminRoute: typeof AdminRoute
   ArticlesRoute: typeof ArticlesRoute
   AuthRoute: typeof AuthRoute
-  DashboardRoute: typeof DashboardRoute
   DiasporaRoute: typeof DiasporaRoute
   EventsRoute: typeof EventsRouteWithChildren
   MembersRoute: typeof MembersRoute
   MentorshipRoute: typeof MentorshipRoute
-  NotificationsRoute: typeof NotificationsRoute
-  ProfileRoute: typeof ProfileRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -230,20 +231,6 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/notifications': {
-      id: '/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentorship': {
@@ -274,13 +261,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiasporaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -293,13 +273,6 @@ declare module '@tanstack/react-router' {
       path: '/articles'
       fullPath: '/articles'
       preLoaderRoute: typeof ArticlesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/activegen': {
@@ -330,6 +303,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ActivegenIdRouteImport
       parentRoute: typeof ActivegenRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -359,28 +360,18 @@ const EventsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivegenRoute: ActivegenRouteWithChildren,
-  AdminRoute: AdminRoute,
   ArticlesRoute: ArticlesRoute,
   AuthRoute: AuthRoute,
-  DashboardRoute: DashboardRoute,
   DiasporaRoute: DiasporaRoute,
   EventsRoute: EventsRouteWithChildren,
   MembersRoute: MembersRoute,
   MentorshipRoute: MentorshipRoute,
-  NotificationsRoute: NotificationsRoute,
-  ProfileRoute: ProfileRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
