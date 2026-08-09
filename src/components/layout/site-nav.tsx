@@ -1,6 +1,7 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { Bell, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
@@ -24,10 +25,13 @@ export function SiteNav() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useSession();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
     await supabase.auth.signOut();
-    router.invalidate();
+    router.navigate({ to: "/auth", replace: true });
   }
 
   return (
