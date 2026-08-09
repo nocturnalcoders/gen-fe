@@ -1,11 +1,22 @@
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Award, Briefcase, Calendar, GraduationCap } from "lucide-react";
+import { Award, Briefcase, Calendar, GraduationCap, Loader2, Pencil } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useSession } from "@/hooks/use-session";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import type { Tables } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -18,7 +29,60 @@ export const Route = createFileRoute("/_authenticated/profile")({
   }),
 });
 
+type Profile = Tables<"profiles">;
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
 function ProfilePage() {
+  const { user } = useSession();
+  const [editOpen, setEditOpen] = useState(false);
+
+  const {
+    data: profile,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      if (!user) throw new Error("Not signed in");
+      const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+      if (error) throw error;
+      return data as Profile;
+    },
+    enabled: !!user,
+  });
+
+  const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "Member";
+  const subheadline = profile?.headline || (profile?.role && profile?.company ? `${profile.role} · ${profile.company}` : profile?.role || profile?.company || "Community member");
+
+  if (isLoading) {
+    return (
+      <PageShell>
+        <div className="flex min-h-[40vh] items-center justify-center">
+          <Loader2 className="size-6 animate-spin text-primary" />
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <PageShell>
+        <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3">
+          <p className="text-muted-foreground">Could not load your profile.</p>
+          <Button onClick={() => refetch()}>Retry</Button>
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell>
       <Card className="glass mb-8 overflow-hidden rounded-3xl border-border/50 p-0 shadow-soft">
@@ -26,25 +90,60 @@ function ProfilePage() {
         <div className="px-6 pb-6 sm:px-8">
           <div className="-mt-10 grid grid-cols-[auto_1fr] items-end gap-4 sm:flex sm:items-end sm:justify-between">
             <div className="flex items-end gap-4">
-              <div className="size-20 shrink-0 rounded-2xl bg-gold-gradient ring-4 ring-background shadow-soft sm:size-24" />
+              <Avatar className="size-20 shrink-0 rounded-2xl ring-4 ring-background shadow-soft sm:size-24">
+                <AvatarImage src={profile.avatar_url || undefined} alt={displayName} />
+                <AvatarFallback className="bg-gold-gradient text-gold-foreground text-xl font-semibold rounded-2xl">
+                  {initials(displayName)}
+                </AvatarFallback>
+              </Avatar>
               <div className="min-w-0 pb-1">
-                <h1 className="truncate text-2xl font-bold sm:text-3xl">Rina Prasetya</h1>
-                <div className="text-sm text-muted-foreground">Product Designer · Jakarta 🇮🇩</div>
+                <h1 className="truncate text-2xl font-bold sm:text-3xl">{displayName}</h1>
+                <div className="text-sm text-muted-foreground">
+                  {subheadline}
+                  {profile.location && ` · ${profile.location}`}
+                </div>
               </div>
             </div>
             <div className="flex gap-2">
               <Button variant="outline">Share</Button>
-              <Button>Edit profile</Button>
+              <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Pencil className="mr-2 size-4" />
+                    Edit profile
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <EditProfileForm profile={profile} onSaved={() => { refetch(); setEditOpen(false); }} />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
           <p className="mt-5 max-w-2xl text-sm text-foreground/90">
-            Designer building tools for Indonesian founders. Ex-Tokopedia. Currently mentoring 4 designers relocating abroad. Coffee snob, part-time hiker.
+            {profile.bio || "Tell the community who you are by editing your profile."}
           </p>
           <div className="mt-4 flex flex-wrap gap-1.5">
-            {["Product Design", "UX Research", "Design Systems", "Mentoring", "Bahasa Indonesia", "English"].map((s) => (
+            {(profile.skills || []).map((s) => (
               <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
             ))}
+            {(profile.interests || []).map((s) => (
+              <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>
+            ))}
           </div>
+          {(profile.website || profile.linkedin) && (
+            <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
+              {profile.website && (
+                <a href={profile.website} target="_blank" rel="noreferrer" className="hover:text-primary hover:underline">
+                  Website
+                </a>
+              )}
+              {profile.linkedin && (
+                <a href={profile.linkedin} target="_blank" rel="noreferrer" className="hover:text-primary hover:underline">
+                  LinkedIn
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </Card>
 
@@ -99,7 +198,7 @@ function ProfilePage() {
           <Card className="glass rounded-2xl border-border/50 p-6 shadow-soft">
             <div className="mb-3 flex items-center gap-2 font-semibold"><GraduationCap className="size-4 text-primary" /> Mentorship progress</div>
             <div className="space-y-4">
-              {[["Land Tech Lead role", 62], ["Publish 3 articles", 33], ["Complete design system course", 80]].map(([g, p]) => (
+              {[ ["Land Tech Lead role", 62], ["Publish 3 articles", 33], ["Complete design system course", 80] ].map(([g, p]) => (
                 <div key={g as string}>
                   <div className="mb-1 flex items-center justify-between text-sm"><span>{g}</span><span className="font-medium">{p}%</span></div>
                   <Progress value={p as number} />
@@ -123,5 +222,124 @@ function ProfilePage() {
         </TabsContent>
       </Tabs>
     </PageShell>
+  );
+}
+
+function EditProfileForm({ profile, onSaved }: { profile: Profile; onSaved: () => void }) {
+  const { user } = useSession();
+  const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState({
+    display_name: profile.display_name || "",
+    headline: profile.headline || "",
+    role: profile.role || "",
+    company: profile.company || "",
+    location: profile.location || "",
+    bio: profile.bio || "",
+    website: profile.website || "",
+    linkedin: profile.linkedin || "",
+    skills: (profile.skills || []).join(", "),
+    interests: (profile.interests || []).join(", "),
+  });
+
+  useEffect(() => {
+    setForm({
+      display_name: profile.display_name || "",
+      headline: profile.headline || "",
+      role: profile.role || "",
+      company: profile.company || "",
+      location: profile.location || "",
+      bio: profile.bio || "",
+      website: profile.website || "",
+      linkedin: profile.linkedin || "",
+      skills: (profile.skills || []).join(", "),
+      interests: (profile.interests || []).join(", "),
+    });
+  }, [profile]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    setBusy(true);
+
+    const skills = form.skills.split(",").map((s) => s.trim()).filter(Boolean);
+    const interests = form.interests.split(",").map((s) => s.trim()).filter(Boolean);
+
+    const { error } = await supabase.from("profiles").update({
+      display_name: form.display_name.trim(),
+      headline: form.headline.trim(),
+      role: form.role.trim(),
+      company: form.company.trim(),
+      location: form.location.trim(),
+      bio: form.bio.trim(),
+      website: form.website.trim() || null,
+      linkedin: form.linkedin.trim() || null,
+      skills,
+      interests,
+    }).eq("id", user.id);
+
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Profile updated");
+      onSaved();
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <DialogHeader>
+        <DialogTitle>Edit profile</DialogTitle>
+        <DialogDescription>Update your public profile so the community can find and connect with you.</DialogDescription>
+      </DialogHeader>
+      <div className="grid gap-4 py-4 sm:grid-cols-2">
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="display_name">Display name</Label>
+          <Input id="display_name" value={form.display_name} onChange={(e) => setForm((f) => ({ ...f, display_name: e.target.value }))} />
+        </div>
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="headline">Headline</Label>
+          <Input id="headline" placeholder="e.g. Product Designer at Tokopedia" value={form.headline} onChange={(e) => setForm((f) => ({ ...f, headline: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="role">Role</Label>
+          <Input id="role" placeholder="e.g. Product Designer" value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="company">Company</Label>
+          <Input id="company" placeholder="e.g. Tokopedia" value={form.company} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="location">Location</Label>
+          <Input id="location" placeholder="e.g. Jakarta 🇮🇩" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="website">Website</Label>
+          <Input id="website" type="url" placeholder="https://your-site.com" value={form.website} onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))} />
+        </div>
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="linkedin">LinkedIn</Label>
+          <Input id="linkedin" type="url" placeholder="https://linkedin.com/in/you" value={form.linkedin} onChange={(e) => setForm((f) => ({ ...f, linkedin: e.target.value }))} />
+        </div>
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="bio">Bio</Label>
+          <Textarea id="bio" placeholder="Tell us about yourself…" value={form.bio} onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="skills">Skills (comma separated)</Label>
+          <Input id="skills" placeholder="e.g. Product Design, UX Research, Figma" value={form.skills} onChange={(e) => setForm((f) => ({ ...f, skills: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="interests">Interests (comma separated)</Label>
+          <Input id="interests" placeholder="e.g. Hiking, Coffee, Mentoring" value={form.interests} onChange={(e) => setForm((f) => ({ ...f, interests: e.target.value }))} />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button type="submit" disabled={busy}>
+          {busy && <Loader2 className="mr-2 size-4 animate-spin" />}
+          Save changes
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }
