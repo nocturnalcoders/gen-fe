@@ -25,10 +25,13 @@ export function SiteNav() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useSession();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
     await supabase.auth.signOut();
-    router.invalidate();
+    router.navigate({ to: "/auth", replace: true });
   }
 
   return (
