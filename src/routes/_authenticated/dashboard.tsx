@@ -19,6 +19,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function Dashboard() {
+  const { user } = useSession();
+  const displayName = user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "there";
+
   const feed = [
     { author: "Nadia W.", time: "2h", body: "Just published a new guide on the German Blue Card. AMA in the comments!", likes: 48, comments: 12 },
     { author: "Farhan A.", time: "5h", body: "Looking for 2 co-founders for a fintech idea targeting Indonesian gig workers. DM me.", likes: 32, comments: 21 },
@@ -28,7 +31,7 @@ function Dashboard() {
     <PageShell>
       <PageHeader
         eyebrow="Welcome back"
-        title="Selamat datang, Rina 👋"
+        title={`Selamat datang, ${displayName} 👋`}
         description="Here's what's happening in your community today."
         actions={<Button asChild><Link to="/articles">Write an article</Link></Button>}
       />
