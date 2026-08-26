@@ -293,25 +293,25 @@ function EditProfileForm({ profile, onSaved }: { profile: Profile; onSaved: () =
     const skills = form.skills.split(",").map((s) => s.trim()).filter(Boolean);
     const interests = form.interests.split(",").map((s) => s.trim()).filter(Boolean);
 
-    const { error } = await supabase.from("profiles").update({
-      display_name: form.display_name.trim(),
-      headline: form.headline.trim(),
-      role: form.role.trim(),
-      company: form.company.trim(),
-      location: form.location.trim(),
-      bio: form.bio.trim(),
-      website: form.website.trim() || null,
-      linkedin: form.linkedin.trim() || null,
-      skills,
-      interests,
-    }).eq("id", user.id);
-
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
+    try {
+      await api.profiles.updateMyProfile({
+        displayName: form.display_name.trim(),
+        headline: form.headline.trim(),
+        role: form.role.trim(),
+        company: form.company.trim(),
+        location: form.location.trim(),
+        bio: form.bio.trim(),
+        website: form.website.trim() || null,
+        linkedin: form.linkedin.trim() || null,
+        skills,
+        interests,
+      });
       toast.success("Profile updated");
       onSaved();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save profile");
+    } finally {
+      setBusy(false);
     }
   }
 
