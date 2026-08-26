@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/api";
+import type { Session } from "@/api/types";
 
 export function useSession() {
   const [session, setSession] = useState<Session | null>(null);
@@ -8,17 +8,17 @@ export function useSession() {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
+    api.auth.getSession().then((s) => {
       if (!mounted) return;
-      setSession(data.session);
+      setSession(s);
       setLoading(false);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
+    const unsubscribe = api.auth.onAuthStateChange((s) => {
       setSession(s);
     });
     return () => {
       mounted = false;
-      sub.subscription.unsubscribe();
+      unsubscribe();
     };
   }, []);
 
