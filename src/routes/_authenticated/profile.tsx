@@ -81,15 +81,14 @@ function ProfilePage() {
   } = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
-      if (!user) throw new Error("Not signed in");
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-      if (error) throw error;
-      return data as Profile;
+      const p = await api.profiles.getMyProfile();
+      if (!p) throw new Error("Profile not found");
+      return toViewModel(p);
     },
     enabled: !!user,
   });
 
-  const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "Member";
+  const displayName = profile?.display_name || user?.displayName || user?.email?.split("@")[0] || "Member";
   const subheadline = profile?.headline || (profile?.role && profile?.company ? `${profile.role} · ${profile.company}` : profile?.role || profile?.company || "Community member");
 
   if (isLoading) {
