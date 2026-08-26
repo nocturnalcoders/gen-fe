@@ -14,9 +14,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/hooks/use-session";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/api";
 import { toast } from "sonner";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Profile as ApiProfile } from "@/api/types";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
