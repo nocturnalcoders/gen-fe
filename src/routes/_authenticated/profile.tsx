@@ -29,7 +29,37 @@ export const Route = createFileRoute("/_authenticated/profile")({
   }),
 });
 
-type Profile = Tables<"profiles">;
+// Local view model keeps the existing snake_case markup working while all
+// backend access goes through the adapter-agnostic API layer.
+type Profile = {
+  display_name: string | null;
+  avatar_url: string | null;
+  headline: string | null;
+  role: string | null;
+  company: string | null;
+  location: string | null;
+  bio: string | null;
+  website: string | null;
+  linkedin: string | null;
+  skills: string[];
+  interests: string[];
+};
+
+function toViewModel(p: ApiProfile): Profile {
+  return {
+    display_name: p.displayName,
+    avatar_url: p.avatarUrl,
+    headline: p.headline,
+    role: p.role,
+    company: p.company,
+    location: p.location,
+    bio: p.bio,
+    website: p.website,
+    linkedin: p.linkedin,
+    skills: p.skills,
+    interests: p.interests,
+  };
+}
 
 function initials(name: string) {
   return name
