@@ -34,7 +34,6 @@ import type {
   ProfilesApi,
   RegistrationsApi,
   Activity,
-  RegistrationTargets,
   Session,
   ThreadMessage,
   ThreadsApi,
@@ -219,4 +218,3 @@ export const restApi: ApiClient = {
   admin,
 };
 
-export type { RegistrationTargets };
