@@ -14,9 +14,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/hooks/use-session";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/api";
 import { toast } from "sonner";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Profile as ApiProfile } from "@/api/types";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -29,7 +29,37 @@ export const Route = createFileRoute("/_authenticated/profile")({
   }),
 });
 
-type Profile = Tables<"profiles">;
+// Local view model keeps the existing snake_case markup working while all
+// backend access goes through the adapter-agnostic API layer.
+type Profile = {
+  display_name: string | null;
+  avatar_url: string | null;
+  headline: string | null;
+  role: string | null;
+  company: string | null;
+  location: string | null;
+  bio: string | null;
+  website: string | null;
+  linkedin: string | null;
+  skills: string[];
+  interests: string[];
+};
+
+function toViewModel(p: ApiProfile): Profile {
+  return {
+    display_name: p.displayName,
+    avatar_url: p.avatarUrl,
+    headline: p.headline,
+    role: p.role,
+    company: p.company,
+    location: p.location,
+    bio: p.bio,
+    website: p.website,
+    linkedin: p.linkedin,
+    skills: p.skills,
+    interests: p.interests,
+  };
+}
 
 function initials(name: string) {
   return name
@@ -51,15 +81,14 @@ function ProfilePage() {
   } = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
-      if (!user) throw new Error("Not signed in");
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-      if (error) throw error;
-      return data as Profile;
+      const p = await api.profiles.getMyProfile();
+      if (!p) throw new Error("Profile not found");
+      return toViewModel(p);
     },
     enabled: !!user,
   });
 
-  const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "Member";
+  const displayName = profile?.display_name || user?.displayName || user?.email?.split("@")[0] || "Member";
   const subheadline = profile?.headline || (profile?.role && profile?.company ? `${profile.role} · ${profile.company}` : profile?.role || profile?.company || "Community member");
 
   if (isLoading) {
@@ -264,25 +293,25 @@ function EditProfileForm({ profile, onSaved }: { profile: Profile; onSaved: () =
     const skills = form.skills.split(",").map((s) => s.trim()).filter(Boolean);
     const interests = form.interests.split(",").map((s) => s.trim()).filter(Boolean);
 
-    const { error } = await supabase.from("profiles").update({
-      display_name: form.display_name.trim(),
-      headline: form.headline.trim(),
-      role: form.role.trim(),
-      company: form.company.trim(),
-      location: form.location.trim(),
-      bio: form.bio.trim(),
-      website: form.website.trim() || null,
-      linkedin: form.linkedin.trim() || null,
-      skills,
-      interests,
-    }).eq("id", user.id);
-
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
+    try {
+      await api.profiles.updateMyProfile({
+        displayName: form.display_name.trim(),
+        headline: form.headline.trim(),
+        role: form.role.trim(),
+        company: form.company.trim(),
+        location: form.location.trim(),
+        bio: form.bio.trim(),
+        website: form.website.trim() || null,
+        linkedin: form.linkedin.trim() || null,
+        skills,
+        interests,
+      });
       toast.success("Profile updated");
       onSaved();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save profile");
+    } finally {
+      setBusy(false);
     }
   }
 

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const { user } = useSession();
-  const displayName = user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "there";
+  const displayName = user?.displayName || user?.email?.split("@")[0] || "there";
 
   const feed = [
     { author: "Nadia W.", time: "2h", body: "Just published a new guide on the German Blue Card. AMA in the comments!", likes: 48, comments: 12 },

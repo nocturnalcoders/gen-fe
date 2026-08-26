@@ -7,73 +7,54 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/api";
+import type { TargetType } from "@/api/types";
 import { useSession } from "@/hooks/use-session";
-
-type Msg = {
-  id: string;
-  user_id: string;
-  body: string;
-  created_at: string;
-  profiles: { display_name: string | null; avatar_url: string | null } | null;
-};
-
-async function fetchMessages(targetType: "activity" | "event", targetId: string) {
-  const { data, error } = await supabase
-    .from("thread_messages")
-    .select("id, user_id, body, created_at, profiles(display_name, avatar_url)")
-    .eq("target_type", targetType)
-    .eq("target_id", targetId)
-    .order("created_at", { ascending: true });
-  if (error) throw error;
-  return (data ?? []) as unknown as Msg[];
-}
 
 export function Thread({
   targetType,
   targetId,
 }: {
-  targetType: "activity" | "event";
+  targetType: TargetType;
   targetId: string;
 }) {
   const { user } = useSession();
   const qc = useQueryClient();
   const key = ["thread", targetType, targetId];
-  const { data: messages = [], isLoading } = useQuery({ queryKey: key, queryFn: () => fetchMessages(targetType, targetId) });
+  const { data: messages = [], isLoading } = useQuery({
+    queryKey: key,
+    queryFn: () => api.threads.list({ targetType, targetId }),
+  });
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`thread-${targetType}-${targetId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "thread_messages", filter: `target_id=eq.${targetId}` },
-        () => qc.invalidateQueries({ queryKey: key }),
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return api.threads.subscribe({ targetType, targetId }, () => {
+      qc.invalidateQueries({ queryKey: ["thread", targetType, targetId] });
+    });
   }, [targetType, targetId, qc]);
 
   async function send() {
     if (!user || !body.trim()) return;
     setSending(true);
-    const { error } = await supabase.from("thread_messages").insert({
-      user_id: user.id,
-      target_type: targetType,
-      target_id: targetId,
-      body: body.trim(),
-    });
-    setSending(false);
-    if (error) toast.error(error.message);
-    else setBody("");
+    try {
+      await api.threads.post({ targetType, targetId, body: body.trim() });
+      setBody("");
+      qc.invalidateQueries({ queryKey: key });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send message");
+    } finally {
+      setSending(false);
+    }
   }
 
   async function remove(id: string) {
-    const { error } = await supabase.from("thread_messages").delete().eq("id", id);
-    if (error) toast.error(error.message);
+    try {
+      await api.threads.remove(id);
+      qc.invalidateQueries({ queryKey: key });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not delete message");
+    }
   }
 
   return (
@@ -94,11 +75,11 @@ export function Thread({
               <div className="size-8 shrink-0 rounded-full bg-gold-gradient" aria-hidden />
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-medium">{m.profiles?.display_name ?? "Member"}</span>
+                  <span className="text-sm font-medium">{m.authorName ?? "Member"}</span>
                   <span className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(m.createdAt), { addSuffix: true })}
                   </span>
-                  {user?.id === m.user_id && (
+                  {user?.id === m.userId && (
                     <button
                       onClick={() => remove(m.id)}
                       className="ml-auto text-muted-foreground hover:text-destructive"
