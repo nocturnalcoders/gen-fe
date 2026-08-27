@@ -7,9 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/api";
 
-export const Route = createFileRoute("/events")({
+export const Route = createFileRoute("/events/")({
   component: EventsPage,
   head: () => ({
     meta: [
@@ -20,35 +20,11 @@ export const Route = createFileRoute("/events")({
   }),
 });
 
-type EventRow = {
-  id: string;
-  title: string;
-  event_type: string;
-  event_date: string;
-  location: string;
-  capacity: number;
-  joined: number;
-};
-
-async function fetchEvents(): Promise<EventRow[]> {
-  const { data, error } = await supabase
-    .from("events")
-    .select("id, title, event_type, event_date, location, capacity, registrations(count)")
-    .order("event_date", { ascending: true });
-  if (error) throw error;
-  return (data ?? []).map((e: any) => ({
-    id: e.id,
-    title: e.title,
-    event_type: e.event_type,
-    event_date: e.event_date,
-    location: e.location,
-    capacity: e.capacity,
-    joined: e.registrations?.[0]?.count ?? 0,
-  }));
-}
-
 function EventsPage() {
-  const { data: events = [], isLoading } = useQuery({ queryKey: ["events"], queryFn: fetchEvents });
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ["events"],
+    queryFn: () => api.events.list(),
+  });
 
   return (
     <PageShell>
@@ -68,8 +44,8 @@ function EventsPage() {
               <Card key={e.id} className="glass overflow-hidden rounded-2xl border-border/50 shadow-soft">
                 <Link to="/events/$id" params={{ id: e.id }} className="block">
                   <div className="relative flex h-28 items-center justify-center bg-hero-gradient text-white">
-                    <Badge className="absolute left-3 top-3 border-white/20 bg-white/15 backdrop-blur">{e.event_type}</Badge>
-                    <div className="font-display text-xl font-semibold opacity-90">{format(new Date(e.event_date), "MMM d")}</div>
+                    <Badge className="absolute left-3 top-3 border-white/20 bg-white/15 backdrop-blur">{e.eventType}</Badge>
+                    <div className="font-display text-xl font-semibold opacity-90">{format(new Date(e.eventDate), "MMM d")}</div>
                   </div>
                 </Link>
                 <div className="p-5">
@@ -77,7 +53,7 @@ function EventsPage() {
                     <h3 className="font-semibold leading-snug hover:text-primary">{e.title}</h3>
                   </Link>
                   <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1.5"><Calendar className="size-3.5" /> {format(new Date(e.event_date), "EEE, MMM d · HH:mm")}</div>
+                    <div className="flex items-center gap-1.5"><Calendar className="size-3.5" /> {format(new Date(e.eventDate), "EEE, MMM d · HH:mm")}</div>
                     <div className="flex items-center gap-1.5"><MapPin className="size-3.5" /> {e.location}</div>
                     <div className="flex items-center gap-1.5"><Users className="size-3.5" /> {e.joined}/{e.capacity} registered</div>
                   </div>

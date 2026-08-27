@@ -3,7 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/api";
+import type { TargetType } from "@/api/types";
 import { useSession } from "@/hooks/use-session";
 
 export function JoinButton({
@@ -14,7 +15,7 @@ export function JoinButton({
   joinLabel = "Join",
   leaveLabel = "Leave",
 }: {
-  targetType: "activity" | "event";
+  targetType: TargetType;
   targetId: string;
   full?: boolean;
   onChange?: () => void;
@@ -27,18 +28,14 @@ export function JoinButton({
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!user) return setJoined(false);
+    if (!user) {
+      setJoined(false);
+      return;
+    }
     let cancelled = false;
-    supabase
-      .from("registrations")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("target_type", targetType)
-      .eq("target_id", targetId)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled) setJoined(!!data);
-      });
+    api.registrations.isRegistered({ targetType, targetId }).then((value) => {
+      if (!cancelled) setJoined(value);
+    });
     return () => {
       cancelled = true;
     };
@@ -56,40 +53,29 @@ export function JoinButton({
 
   async function toggle() {
     if (!user) return;
+    if (!joined && full) {
+      toast.error("This is at capacity.");
+      return;
+    }
     setBusy(true);
-    if (joined) {
-      const { error } = await supabase
-        .from("registrations")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("target_type", targetType)
-        .eq("target_id", targetId);
-      if (error) toast.error(error.message);
-      else {
+    try {
+      if (joined) {
+        await api.registrations.unregister({ targetType, targetId });
         setJoined(false);
         toast.success("You left this " + targetType);
-      }
-    } else {
-      if (full) {
-        toast.error("This is at capacity.");
-        setBusy(false);
-        return;
-      }
-      const { error } = await supabase.from("registrations").insert({
-        user_id: user.id,
-        target_type: targetType,
-        target_id: targetId,
-      });
-      if (error) toast.error(error.message);
-      else {
+      } else {
+        await api.registrations.register({ targetType, targetId });
         setJoined(true);
         toast.success("You're in! See you there.");
       }
+      onChange?.();
+      qc.invalidateQueries({ queryKey: [targetType === "activity" ? "activities" : "events"] });
+      qc.invalidateQueries({ queryKey: [targetType, targetId] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
-    onChange?.();
-    qc.invalidateQueries({ queryKey: [targetType === "activity" ? "activities" : "events"] });
-    qc.invalidateQueries({ queryKey: [targetType, targetId] });
   }
 
   return (

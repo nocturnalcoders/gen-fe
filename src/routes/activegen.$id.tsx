@@ -6,7 +6,7 @@ import { ArrowLeft, Calendar, MapPin, Users } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/api";
 import { Thread } from "@/components/thread";
 import { JoinButton } from "@/components/join-button";
 
@@ -32,17 +32,9 @@ export const Route = createFileRoute("/activegen/$id")({
 });
 
 async function fetchActivity(id: string) {
-  const { data, error } = await supabase
-    .from("activities")
-    .select("id, title, activity_type, activity_date, location, capacity, host_name, description, registrations(count)")
-    .eq("id", id)
-    .maybeSingle();
-  if (error) throw error;
-  if (!data) throw notFound();
-  return {
-    ...data,
-    joined: (data as any).registrations?.[0]?.count ?? 0,
-  };
+  const activity = await api.activities.get(id);
+  if (!activity) throw notFound();
+  return activity;
 }
 
 function ActivityDetail() {
@@ -52,17 +44,9 @@ function ActivityDetail() {
   const { data, isLoading } = useQuery({ queryKey: key, queryFn: () => fetchActivity(id) });
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`activity-${id}-registrations`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "registrations", filter: `target_id=eq.${id}` },
-        () => qc.invalidateQueries({ queryKey: key }),
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return api.activities.subscribe(id, () => {
+      qc.invalidateQueries({ queryKey: ["activity", id] });
+    });
   }, [id, qc]);
 
   if (isLoading || !data) {
@@ -86,16 +70,16 @@ function ActivityDetail() {
           <Card className="glass overflow-hidden rounded-2xl border-border/50 shadow-soft">
             <div className="relative flex h-40 items-center justify-center bg-hero-gradient">
               <Badge className="absolute left-4 top-4 border-white/20 bg-white/15 text-white backdrop-blur">
-                {data.activity_type}
+                {data.activityType}
               </Badge>
             </div>
             <div className="p-6">
               <h1 className="font-display text-2xl font-bold sm:text-3xl">{data.title}</h1>
               <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-                <div className="flex items-center gap-2"><Calendar className="size-4" /> {format(new Date(data.activity_date), "EEE, MMM d yyyy · HH:mm")}</div>
+                <div className="flex items-center gap-2"><Calendar className="size-4" /> {format(new Date(data.activityDate), "EEE, MMM d yyyy · HH:mm")}</div>
                 <div className="flex items-center gap-2"><MapPin className="size-4" /> {data.location}</div>
                 <div className="flex items-center gap-2"><Users className="size-4" /> {data.joined}/{data.capacity} joined {full && <span className="text-destructive">· full</span>}</div>
-                <div>Hosted by <span className="text-foreground">{data.host_name ?? "Community"}</span></div>
+                <div>Hosted by <span className="text-foreground">{data.hostName ?? "Community"}</span></div>
               </div>
               {data.description && <p className="mt-5 text-sm leading-relaxed">{data.description}</p>}
             </div>

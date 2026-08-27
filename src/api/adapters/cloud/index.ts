@@ -166,15 +166,30 @@ function subscribeTable(channelName: string, table: string, filter: string, onCh
   };
 }
 
+// registrations is polymorphic (target_type + target_id), so PostgREST cannot
+// embed a count. Fetch the ids and tally them client-side instead.
+async function joinedCounts(targetType: "activity" | "event", targetIds?: ID[]) {
+  let query = supabase.from("registrations").select("target_id").eq("target_type", targetType);
+  if (targetIds && targetIds.length > 0) query = query.in("target_id", targetIds);
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  const counts = new Map<string, number>();
+  for (const row of (data ?? []) as Array<{ target_id: string }>) {
+    counts.set(row.target_id, (counts.get(row.target_id) ?? 0) + 1);
+  }
+  return counts;
+}
+
 const activities: ActivitiesApi = {
   list: async () => {
     const { data, error } = await supabase
       .from("activities")
       .select(
-        "id, title, activity_type, activity_date, location, capacity, host_name, description, registrations(count)",
+        "id, title, activity_type, activity_date, location, capacity, host_name, description",
       )
       .order("activity_date", { ascending: true });
     if (error) throw new Error(error.message);
+    const counts = await joinedCounts("activity");
     return (data ?? []).map((a: Record<string, any>) => ({
       id: a['id'],
       title: a['title'],
@@ -184,19 +199,20 @@ const activities: ActivitiesApi = {
       capacity: a['capacity'],
       hostName: a['host_name'],
       description: a['description'] ?? null,
-      joined: a['registrations']?.[0]?.count ?? 0,
+      joined: counts.get(a['id']) ?? 0,
     }));
   },
   get: async (id) => {
     const { data, error } = await supabase
       .from("activities")
       .select(
-        "id, title, activity_type, activity_date, location, capacity, host_name, description, registrations(count)",
+        "id, title, activity_type, activity_date, location, capacity, host_name, description",
       )
       .eq("id", id)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return null;
+    const counts = await joinedCounts("activity", [id]);
     const a = data as Record<string, any>;
     return {
       id: a['id'],
@@ -207,7 +223,7 @@ const activities: ActivitiesApi = {
       capacity: a['capacity'],
       hostName: a['host_name'],
       description: a['description'] ?? null,
-      joined: a['registrations']?.[0]?.count ?? 0,
+      joined: counts.get(a['id']) ?? 0,
     };
   },
   subscribe: (id, onChange) =>
@@ -218,9 +234,10 @@ const events: EventsApi = {
   list: async () => {
     const { data, error } = await supabase
       .from("events")
-      .select("id, title, event_type, event_date, location, capacity, description, registrations(count)")
+      .select("id, title, event_type, event_date, location, capacity, description")
       .order("event_date", { ascending: true });
     if (error) throw new Error(error.message);
+    const counts = await joinedCounts("event");
     return (data ?? []).map((e: Record<string, any>) => ({
       id: e['id'],
       title: e['title'],
@@ -229,17 +246,18 @@ const events: EventsApi = {
       location: e['location'],
       capacity: e['capacity'],
       description: e['description'] ?? null,
-      joined: e['registrations']?.[0]?.count ?? 0,
+      joined: counts.get(e['id']) ?? 0,
     }));
   },
   get: async (id) => {
     const { data, error } = await supabase
       .from("events")
-      .select("id, title, event_type, event_date, location, capacity, description, registrations(count)")
+      .select("id, title, event_type, event_date, location, capacity, description")
       .eq("id", id)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return null;
+    const counts = await joinedCounts("event", [id]);
     const e = data as Record<string, any>;
     return {
       id: e['id'],
@@ -249,7 +267,7 @@ const events: EventsApi = {
       location: e['location'],
       capacity: e['capacity'],
       description: e['description'] ?? null,
-      joined: e['registrations']?.[0]?.count ?? 0,
+      joined: counts.get(e['id']) ?? 0,
     };
   },
   subscribe: (id, onChange) =>

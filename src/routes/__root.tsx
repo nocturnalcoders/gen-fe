@@ -13,7 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/api";
 
 function NotFoundComponent() {
   return (
@@ -134,12 +134,10 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+    return api.auth.onAuthStateChange((session) => {
       router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      if (session) queryClient.invalidateQueries();
     });
-    return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
 
   return (

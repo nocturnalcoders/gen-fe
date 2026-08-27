@@ -12,13 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as MentorshipRouteImport } from './routes/mentorship'
 import { Route as MembersRouteImport } from './routes/members'
-import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiasporaRouteImport } from './routes/diaspora'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ArticlesRouteImport } from './routes/articles'
-import { Route as ActivegenRouteImport } from './routes/activegen'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EventsIndexRouteImport } from './routes/events.index'
+import { Route as ActivegenIndexRouteImport } from './routes/activegen.index'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as ActivegenIdRouteImport } from './routes/activegen.$id'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -41,11 +41,6 @@ const MembersRoute = MembersRouteImport.update({
   path: '/members',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EventsRoute = EventsRouteImport.update({
-  id: '/events',
-  path: '/events',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DiasporaRoute = DiasporaRouteImport.update({
   id: '/diaspora',
   path: '/diaspora',
@@ -61,11 +56,6 @@ const ArticlesRoute = ArticlesRouteImport.update({
   path: '/articles',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ActivegenRoute = ActivegenRouteImport.update({
-  id: '/activegen',
-  path: '/activegen',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -75,15 +65,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventsIndexRoute = EventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActivegenIndexRoute = ActivegenIndexRouteImport.update({
+  id: '/activegen/',
+  path: '/activegen/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsIdRoute = EventsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => EventsRoute,
+  id: '/events/$id',
+  path: '/events/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ActivegenIdRoute = ActivegenIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ActivegenRoute,
+  id: '/activegen/$id',
+  path: '/activegen/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
@@ -109,11 +109,9 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/activegen': typeof ActivegenRouteWithChildren
   '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
   '/diaspora': typeof DiasporaRoute
-  '/events': typeof EventsRouteWithChildren
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -123,14 +121,14 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
+  '/activegen/': typeof ActivegenIndexRoute
+  '/events/': typeof EventsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/activegen': typeof ActivegenRouteWithChildren
   '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
   '/diaspora': typeof DiasporaRoute
-  '/events': typeof EventsRouteWithChildren
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -140,16 +138,16 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
+  '/activegen': typeof ActivegenIndexRoute
+  '/events': typeof EventsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/activegen': typeof ActivegenRouteWithChildren
   '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
   '/diaspora': typeof DiasporaRoute
-  '/events': typeof EventsRouteWithChildren
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -159,16 +157,16 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
+  '/activegen/': typeof ActivegenIndexRoute
+  '/events/': typeof EventsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/activegen'
     | '/articles'
     | '/auth'
     | '/diaspora'
-    | '/events'
     | '/members'
     | '/mentorship'
     | '/sitemap.xml'
@@ -178,14 +176,14 @@ export interface FileRouteTypes {
     | '/profile'
     | '/activegen/$id'
     | '/events/$id'
+    | '/activegen/'
+    | '/events/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/activegen'
     | '/articles'
     | '/auth'
     | '/diaspora'
-    | '/events'
     | '/members'
     | '/mentorship'
     | '/sitemap.xml'
@@ -195,15 +193,15 @@ export interface FileRouteTypes {
     | '/profile'
     | '/activegen/$id'
     | '/events/$id'
+    | '/activegen'
+    | '/events'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/activegen'
     | '/articles'
     | '/auth'
     | '/diaspora'
-    | '/events'
     | '/members'
     | '/mentorship'
     | '/sitemap.xml'
@@ -213,19 +211,23 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/activegen/$id'
     | '/events/$id'
+    | '/activegen/'
+    | '/events/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  ActivegenRoute: typeof ActivegenRouteWithChildren
   ArticlesRoute: typeof ArticlesRoute
   AuthRoute: typeof AuthRoute
   DiasporaRoute: typeof DiasporaRoute
-  EventsRoute: typeof EventsRouteWithChildren
   MembersRoute: typeof MembersRoute
   MentorshipRoute: typeof MentorshipRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ActivegenIdRoute: typeof ActivegenIdRoute
+  EventsIdRoute: typeof EventsIdRoute
+  ActivegenIndexRoute: typeof ActivegenIndexRoute
+  EventsIndexRoute: typeof EventsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -251,13 +253,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MembersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/events': {
-      id: '/events'
-      path: '/events'
-      fullPath: '/events'
-      preLoaderRoute: typeof EventsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/diaspora': {
       id: '/diaspora'
       path: '/diaspora'
@@ -279,13 +274,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticlesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/activegen': {
-      id: '/activegen'
-      path: '/activegen'
-      fullPath: '/activegen'
-      preLoaderRoute: typeof ActivegenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -300,19 +288,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/events/': {
+      id: '/events/'
+      path: '/events'
+      fullPath: '/events/'
+      preLoaderRoute: typeof EventsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/activegen/': {
+      id: '/activegen/'
+      path: '/activegen'
+      fullPath: '/activegen/'
+      preLoaderRoute: typeof ActivegenIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events/$id': {
       id: '/events/$id'
-      path: '/$id'
+      path: '/events/$id'
       fullPath: '/events/$id'
       preLoaderRoute: typeof EventsIdRouteImport
-      parentRoute: typeof EventsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/activegen/$id': {
       id: '/activegen/$id'
-      path: '/$id'
+      path: '/activegen/$id'
       fullPath: '/activegen/$id'
       preLoaderRoute: typeof ActivegenIdRouteImport
-      parentRoute: typeof ActivegenRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
@@ -362,40 +364,19 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface ActivegenRouteChildren {
-  ActivegenIdRoute: typeof ActivegenIdRoute
-}
-
-const ActivegenRouteChildren: ActivegenRouteChildren = {
-  ActivegenIdRoute: ActivegenIdRoute,
-}
-
-const ActivegenRouteWithChildren = ActivegenRoute._addFileChildren(
-  ActivegenRouteChildren,
-)
-
-interface EventsRouteChildren {
-  EventsIdRoute: typeof EventsIdRoute
-}
-
-const EventsRouteChildren: EventsRouteChildren = {
-  EventsIdRoute: EventsIdRoute,
-}
-
-const EventsRouteWithChildren =
-  EventsRoute._addFileChildren(EventsRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  ActivegenRoute: ActivegenRouteWithChildren,
   ArticlesRoute: ArticlesRoute,
   AuthRoute: AuthRoute,
   DiasporaRoute: DiasporaRoute,
-  EventsRoute: EventsRouteWithChildren,
   MembersRoute: MembersRoute,
   MentorshipRoute: MentorshipRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ActivegenIdRoute: ActivegenIdRoute,
+  EventsIdRoute: EventsIdRoute,
+  ActivegenIndexRoute: ActivegenIndexRoute,
+  EventsIndexRoute: EventsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
