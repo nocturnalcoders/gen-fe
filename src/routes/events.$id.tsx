@@ -6,7 +6,7 @@ import { ArrowLeft, Calendar, MapPin, Users } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/api";
 import { Thread } from "@/components/thread";
 import { JoinButton } from "@/components/join-button";
 
