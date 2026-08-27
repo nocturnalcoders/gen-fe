@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/use-session";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/api";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard" },
