@@ -30,7 +30,7 @@ export function SiteNav() {
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
-    await supabase.auth.signOut();
+    await api.auth.signOut();
     router.navigate({ to: "/auth", replace: true });
   }
 
