@@ -32,17 +32,9 @@ export const Route = createFileRoute("/activegen/$id")({
 });
 
 async function fetchActivity(id: string) {
-  const { data, error } = await supabase
-    .from("activities")
-    .select("id, title, activity_type, activity_date, location, capacity, host_name, description, registrations(count)")
-    .eq("id", id)
-    .maybeSingle();
-  if (error) throw error;
-  if (!data) throw notFound();
-  return {
-    ...data,
-    joined: (data as any).registrations?.[0]?.count ?? 0,
-  };
+  const activity = await api.activities.get(id);
+  if (!activity) throw notFound();
+  return activity;
 }
 
 function ActivityDetail() {
@@ -52,17 +44,9 @@ function ActivityDetail() {
   const { data, isLoading } = useQuery({ queryKey: key, queryFn: () => fetchActivity(id) });
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`activity-${id}-registrations`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "registrations", filter: `target_id=eq.${id}` },
-        () => qc.invalidateQueries({ queryKey: key }),
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return api.activities.subscribe(id, () => {
+      qc.invalidateQueries({ queryKey: ["activity", id] });
+    });
   }, [id, qc]);
 
   if (isLoading || !data) {
