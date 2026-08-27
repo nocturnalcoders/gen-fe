@@ -33,50 +33,51 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
-      if (session) {
-        const dest = redirect && redirect.startsWith("/") ? redirect : "/dashboard";
-        navigate({ to: dest });
-      }
+    const dest = () => (redirect && redirect.startsWith("/") ? redirect : "/dashboard");
+    const unsubscribe = api.auth.onAuthStateChange((session) => {
+      if (session) navigate({ to: dest() });
     });
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        const dest = redirect && redirect.startsWith("/") ? redirect : "/dashboard";
-        navigate({ to: dest });
-      }
+    api.auth.getSession().then((session) => {
+      if (session) navigate({ to: dest() });
     });
-    return () => sub.subscription.unsubscribe();
+    return unsubscribe;
   }, [navigate, redirect]);
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (error) toast.error(error.message);
+    try {
+      await api.auth.signInWithPassword({ email, password });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Sign in failed");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function signUp(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { full_name: name },
-      },
-    });
-    setBusy(false);
-    if (error) toast.error(error.message);
-    else toast.success("Check your email to confirm your account.");
+    try {
+      const { needsEmailConfirmation } = await api.auth.signUpWithPassword({
+        email,
+        password,
+        fullName: name,
+      });
+      if (needsEmailConfirmation) toast.success("Check your email to confirm your account.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Sign up failed");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function signInGoogle() {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) toast.error("Google sign-in failed. Please try again.");
+    try {
+      await api.auth.signInWithGoogle();
+    } catch {
+      toast.error("Google sign-in failed. Please try again.");
+    }
   }
 
   return (
