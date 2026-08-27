@@ -8,10 +8,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/api";
 
+export const Route = createFileRoute("/activegen")({
+  component: ActiveGen,
+  head: () => ({
+    meta: [
+      { title: "ActiveGen — Garuda" },
+      { name: "description", content: "Sport, hikes, coffee meetups, and volunteering with your community." },
+    ],
+    links: [{ rel: "canonical", href: "/activegen" }],
+  }),
+});
+
 function ActiveGen() {
   const { data: activities = [], isLoading } = useQuery({
     queryKey: ["activities"],
-    queryFn: fetchActivities,
+    queryFn: () => api.activities.list(),
     refetchOnWindowFocus: true,
   });
 
