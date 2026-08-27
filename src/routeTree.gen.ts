@@ -16,7 +16,6 @@ import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiasporaRouteImport } from './routes/diaspora'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ArticlesRouteImport } from './routes/articles'
-import { Route as ActivegenRouteImport } from './routes/activegen'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
@@ -61,11 +60,6 @@ const ArticlesRoute = ArticlesRouteImport.update({
   path: '/articles',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ActivegenRoute = ActivegenRouteImport.update({
-  id: '/activegen',
-  path: '/activegen',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -81,9 +75,9 @@ const EventsIdRoute = EventsIdRouteImport.update({
   getParentRoute: () => EventsRoute,
 } as any)
 const ActivegenIdRoute = ActivegenIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ActivegenRoute,
+  id: '/activegen/$id',
+  path: '/activegen/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
@@ -109,7 +103,6 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/activegen': typeof ActivegenRouteWithChildren
   '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
   '/diaspora': typeof DiasporaRoute
@@ -126,7 +119,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/activegen': typeof ActivegenRouteWithChildren
   '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
   '/diaspora': typeof DiasporaRoute
@@ -145,7 +137,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/activegen': typeof ActivegenRouteWithChildren
   '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
   '/diaspora': typeof DiasporaRoute
@@ -164,7 +155,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/activegen'
     | '/articles'
     | '/auth'
     | '/diaspora'
@@ -181,7 +171,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/activegen'
     | '/articles'
     | '/auth'
     | '/diaspora'
@@ -199,7 +188,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/activegen'
     | '/articles'
     | '/auth'
     | '/diaspora'
@@ -218,7 +206,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  ActivegenRoute: typeof ActivegenRouteWithChildren
   ArticlesRoute: typeof ArticlesRoute
   AuthRoute: typeof AuthRoute
   DiasporaRoute: typeof DiasporaRoute
@@ -226,6 +213,7 @@ export interface RootRouteChildren {
   MembersRoute: typeof MembersRoute
   MentorshipRoute: typeof MentorshipRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ActivegenIdRoute: typeof ActivegenIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -279,13 +267,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticlesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/activegen': {
-      id: '/activegen'
-      path: '/activegen'
-      fullPath: '/activegen'
-      preLoaderRoute: typeof ActivegenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -309,10 +290,10 @@ declare module '@tanstack/react-router' {
     }
     '/activegen/$id': {
       id: '/activegen/$id'
-      path: '/$id'
+      path: '/activegen/$id'
       fullPath: '/activegen/$id'
       preLoaderRoute: typeof ActivegenIdRouteImport
-      parentRoute: typeof ActivegenRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
@@ -362,18 +343,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface ActivegenRouteChildren {
-  ActivegenIdRoute: typeof ActivegenIdRoute
-}
-
-const ActivegenRouteChildren: ActivegenRouteChildren = {
-  ActivegenIdRoute: ActivegenIdRoute,
-}
-
-const ActivegenRouteWithChildren = ActivegenRoute._addFileChildren(
-  ActivegenRouteChildren,
-)
-
 interface EventsRouteChildren {
   EventsIdRoute: typeof EventsIdRoute
 }
@@ -388,7 +357,6 @@ const EventsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  ActivegenRoute: ActivegenRouteWithChildren,
   ArticlesRoute: ArticlesRoute,
   AuthRoute: AuthRoute,
   DiasporaRoute: DiasporaRoute,
@@ -396,6 +364,7 @@ const rootRouteChildren: RootRouteChildren = {
   MembersRoute: MembersRoute,
   MentorshipRoute: MentorshipRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ActivegenIdRoute: ActivegenIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
