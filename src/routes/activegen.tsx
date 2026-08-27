@@ -6,47 +6,7 @@ import { PageShell, PageHeader } from "@/components/layout/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
-
-export const Route = createFileRoute("/activegen")({
-  component: ActiveGen,
-  head: () => ({
-    meta: [
-      { title: "ActiveGen — Garuda" },
-      { name: "description", content: "Sport, hikes, coffee meetups, and volunteering with your community." },
-    ],
-    links: [{ rel: "canonical", href: "/activegen" }],
-  }),
-});
-
-type Row = {
-  id: string;
-  title: string;
-  activity_type: string;
-  activity_date: string;
-  location: string;
-  capacity: number;
-  host_name: string | null;
-  joined: number;
-};
-
-async function fetchActivities(): Promise<Row[]> {
-  const { data, error } = await supabase
-    .from("activities")
-    .select("id, title, activity_type, activity_date, location, capacity, host_name, registrations(count)")
-    .order("activity_date", { ascending: true });
-  if (error) throw error;
-  return (data ?? []).map((a: any) => ({
-    id: a.id,
-    title: a.title,
-    activity_type: a.activity_type,
-    activity_date: a.activity_date,
-    location: a.location,
-    capacity: a.capacity,
-    host_name: a.host_name,
-    joined: a.registrations?.[0]?.count ?? 0,
-  }));
-}
+import { api } from "@/api";
 
 function ActiveGen() {
   const { data: activities = [], isLoading } = useQuery({
