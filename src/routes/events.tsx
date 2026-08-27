@@ -44,8 +44,8 @@ function EventsPage() {
               <Card key={e.id} className="glass overflow-hidden rounded-2xl border-border/50 shadow-soft">
                 <Link to="/events/$id" params={{ id: e.id }} className="block">
                   <div className="relative flex h-28 items-center justify-center bg-hero-gradient text-white">
-                    <Badge className="absolute left-3 top-3 border-white/20 bg-white/15 backdrop-blur">{e.event_type}</Badge>
-                    <div className="font-display text-xl font-semibold opacity-90">{format(new Date(e.event_date), "MMM d")}</div>
+                    <Badge className="absolute left-3 top-3 border-white/20 bg-white/15 backdrop-blur">{e.eventType}</Badge>
+                    <div className="font-display text-xl font-semibold opacity-90">{format(new Date(e.eventDate), "MMM d")}</div>
                   </div>
                 </Link>
                 <div className="p-5">
@@ -53,7 +53,7 @@ function EventsPage() {
                     <h3 className="font-semibold leading-snug hover:text-primary">{e.title}</h3>
                   </Link>
                   <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1.5"><Calendar className="size-3.5" /> {format(new Date(e.event_date), "EEE, MMM d · HH:mm")}</div>
+                    <div className="flex items-center gap-1.5"><Calendar className="size-3.5" /> {format(new Date(e.eventDate), "EEE, MMM d · HH:mm")}</div>
                     <div className="flex items-center gap-1.5"><MapPin className="size-3.5" /> {e.location}</div>
                     <div className="flex items-center gap-1.5"><Users className="size-3.5" /> {e.joined}/{e.capacity} registered</div>
                   </div>
