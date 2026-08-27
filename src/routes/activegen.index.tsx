@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/api";
 
-export const Route = createFileRoute("/activegen")({
+export const Route = createFileRoute("/activegen/")({
   component: ActiveGen,
   head: () => ({
     meta: [

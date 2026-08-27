@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { api } from "@/api";
 
-export const Route = createFileRoute("/events")({
+export const Route = createFileRoute("/events/")({
   component: EventsPage,
   head: () => ({
     meta: [
