@@ -20,35 +20,11 @@ export const Route = createFileRoute("/events")({
   }),
 });
 
-type EventRow = {
-  id: string;
-  title: string;
-  event_type: string;
-  event_date: string;
-  location: string;
-  capacity: number;
-  joined: number;
-};
-
-async function fetchEvents(): Promise<EventRow[]> {
-  const { data, error } = await supabase
-    .from("events")
-    .select("id, title, event_type, event_date, location, capacity, registrations(count)")
-    .order("event_date", { ascending: true });
-  if (error) throw error;
-  return (data ?? []).map((e: any) => ({
-    id: e.id,
-    title: e.title,
-    event_type: e.event_type,
-    event_date: e.event_date,
-    location: e.location,
-    capacity: e.capacity,
-    joined: e.registrations?.[0]?.count ?? 0,
-  }));
-}
-
 function EventsPage() {
-  const { data: events = [], isLoading } = useQuery({ queryKey: ["events"], queryFn: fetchEvents });
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ["events"],
+    queryFn: () => api.events.list(),
+  });
 
   return (
     <PageShell>
