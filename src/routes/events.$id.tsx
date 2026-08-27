@@ -32,14 +32,9 @@ export const Route = createFileRoute("/events/$id")({
 });
 
 async function fetchEvent(id: string) {
-  const { data, error } = await supabase
-    .from("events")
-    .select("id, title, event_type, event_date, location, capacity, description, registrations(count)")
-    .eq("id", id)
-    .maybeSingle();
-  if (error) throw error;
-  if (!data) throw notFound();
-  return { ...data, joined: (data as any).registrations?.[0]?.count ?? 0 };
+  const event = await api.events.get(id);
+  if (!event) throw notFound();
+  return event;
 }
 
 function EventDetail() {
@@ -49,17 +44,9 @@ function EventDetail() {
   const { data, isLoading } = useQuery({ queryKey: key, queryFn: () => fetchEvent(id) });
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`event-${id}-registrations`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "registrations", filter: `target_id=eq.${id}` },
-        () => qc.invalidateQueries({ queryKey: key }),
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return api.events.subscribe(id, () => {
+      qc.invalidateQueries({ queryKey: ["event", id] });
+    });
   }, [id, qc]);
 
   if (isLoading || !data) {
