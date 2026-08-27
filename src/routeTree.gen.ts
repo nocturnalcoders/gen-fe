@@ -76,14 +76,14 @@ const ActivegenIndexRoute = ActivegenIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsIdRoute = EventsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => EventsRoute,
+  id: '/events/$id',
+  path: '/events/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ActivegenIdRoute = ActivegenIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ActivegenRoute,
+  id: '/activegen/$id',
+  path: '/activegen/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
@@ -224,6 +224,8 @@ export interface RootRouteChildren {
   MembersRoute: typeof MembersRoute
   MentorshipRoute: typeof MentorshipRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ActivegenIdRoute: typeof ActivegenIdRoute
+  EventsIdRoute: typeof EventsIdRoute
   ActivegenIndexRoute: typeof ActivegenIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
 }
@@ -302,17 +304,17 @@ declare module '@tanstack/react-router' {
     }
     '/events/$id': {
       id: '/events/$id'
-      path: '/$id'
+      path: '/events/$id'
       fullPath: '/events/$id'
       preLoaderRoute: typeof EventsIdRouteImport
-      parentRoute: typeof EventsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/activegen/$id': {
       id: '/activegen/$id'
-      path: '/$id'
+      path: '/activegen/$id'
       fullPath: '/activegen/$id'
       preLoaderRoute: typeof ActivegenIdRouteImport
-      parentRoute: typeof ActivegenRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
@@ -371,6 +373,8 @@ const rootRouteChildren: RootRouteChildren = {
   MembersRoute: MembersRoute,
   MentorshipRoute: MentorshipRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ActivegenIdRoute: ActivegenIdRoute,
+  EventsIdRoute: EventsIdRoute,
   ActivegenIndexRoute: ActivegenIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
 }
