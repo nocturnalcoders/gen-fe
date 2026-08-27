@@ -44,7 +44,7 @@ function ActiveGen() {
               <Link to="/activegen/$id" params={{ id: a.id }} className="block">
                 <div className="relative flex h-32 items-center justify-center bg-hero-gradient">
                   <Badge className="absolute left-3 top-3 border-white/20 bg-white/15 text-white backdrop-blur">
-                    {a.activity_type}
+                    {a.activityType}
                   </Badge>
                   <div className="font-display text-3xl font-bold text-white/90">ActiveGen</div>
                 </div>
@@ -55,14 +55,14 @@ function ActiveGen() {
                 </Link>
                 <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1.5">
-                    <Calendar className="size-3.5" /> {format(new Date(a.activity_date), "EEE, MMM d · HH:mm")}
+                    <Calendar className="size-3.5" /> {format(new Date(a.activityDate), "EEE, MMM d · HH:mm")}
                   </div>
                   <div className="flex items-center gap-1.5"><MapPin className="size-3.5" /> {a.location}</div>
                   <div className="flex items-center gap-1.5"><Users className="size-3.5" /> {a.joined}/{a.capacity} joined</div>
                 </div>
                 <div className="mt-4 flex items-center gap-2 border-t border-border/60 pt-4">
                   <div className="size-7 rounded-full bg-gold-gradient" />
-                  <span className="text-xs text-muted-foreground">by {a.host_name ?? "Community"}</span>
+                  <span className="text-xs text-muted-foreground">by {a.hostName ?? "Community"}</span>
                   <Button asChild size="sm" className="ml-auto h-8">
                     <Link to="/activegen/$id" params={{ id: a.id }}>Open</Link>
                   </Button>
