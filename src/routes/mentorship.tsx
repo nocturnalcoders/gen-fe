@@ -1,11 +1,16 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Search, Target } from "lucide-react";
+import { toast } from "sonner";
+import { api } from "@/api";
 import { PageShell, PageHeader } from "@/components/layout/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/mentorship")({
@@ -14,21 +19,46 @@ export const Route = createFileRoute("/mentorship")({
     meta: [
       { title: "Mentorship — Garuda" },
       { name: "description", content: "Browse mentors, request mentorship, track goals and progress." },
+      { property: "og:title", content: "Mentorship — Garuda Empowerment Network" },
+      { property: "og:description", content: "Browse mentors, request mentorship, track goals and progress." },
     ],
     links: [{ rel: "canonical", href: "/mentorship" }],
   }),
 });
 
-const mentors = [
-  { name: "Prasetyo H.", role: "Eng Manager · Airbnb", tags: ["Leadership", "Relocation"], sessions: 128 },
-  { name: "Sinta Larasati", role: "Senior PM · Grab", tags: ["Product", "Career"], sessions: 84 },
-  { name: "Yoga Pradana", role: "Staff Eng · Meta", tags: ["System Design"], sessions: 210 },
-  { name: "Dewi Ratna", role: "Design Lead · Tokopedia", tags: ["UX", "Portfolio"], sessions: 66 },
-  { name: "Bagas Setya", role: "Founder · Rasa", tags: ["Startup", "Fundraising"], sessions: 41 },
-  { name: "Nadia Wibowo", role: "Immigration Consultant", tags: ["Visa", "EU"], sessions: 55 },
-];
-
 function MentorshipPage() {
+  const queryClient = useQueryClient();
+  const [q, setQ] = useState("");
+
+  const { data: mentors, isLoading } = useQuery({
+    queryKey: ["mentors", q],
+    queryFn: () => api.mentorship.listMentors({ q: q || undefined }),
+  });
+  const { data: requests } = useQuery({
+    queryKey: ["mentorship", "requests"],
+    queryFn: () => api.mentorship.listRequests(),
+  });
+  const { data: sessions } = useQuery({
+    queryKey: ["mentorship", "sessions"],
+    queryFn: () => api.mentorship.listSessions(),
+  });
+  const { data: goals } = useQuery({
+    queryKey: ["mentorship", "goals"],
+    queryFn: () => api.mentorship.listGoals(),
+  });
+
+  const createRequest = useMutation({
+    mutationFn: (mentorId: string) =>
+      api.mentorship.createRequest({ mentorId, message: "I'd love your guidance." }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["mentorship", "requests"] });
+      toast.success("Mentorship request sent");
+    },
+    onError: () => toast.error("Sign in to request mentorship"),
+  });
+
+  const active = requests?.filter((r) => r.status === "accepted" || r.status === "pending") ?? [];
+
   return (
     <PageShell>
       <PageHeader
@@ -50,77 +80,98 @@ function MentorshipPage() {
           <div className="mb-4 flex items-center gap-3">
             <div className="glass flex flex-1 items-center gap-2 rounded-full px-4 py-2 shadow-soft">
               <Search className="size-4 text-muted-foreground" />
-              <Input placeholder="Search by skill, company, or name…" className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" />
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search by skill, company, or name…"
+                aria-label="Search mentors"
+                className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+              />
             </div>
             <Button variant="outline">Filters</Button>
           </div>
 
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {mentors.map((m) => (
-              <Card key={m.name} className="glass rounded-2xl border-border/50 p-6 shadow-soft">
-                <div className="flex items-center gap-3">
-                  <div className="size-12 rounded-full bg-gold-gradient" />
-                  <div className="min-w-0">
-                    <div className="truncate font-semibold">{m.name}</div>
-                    <div className="truncate text-xs text-muted-foreground">{m.role}</div>
-                  </div>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {m.tags.map((t) => <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>)}
-                </div>
-                <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{m.sessions} sessions</span>
-                  <span>★ 4.9</span>
-                </div>
-                <Button className="mt-4 w-full">Request mentorship</Button>
-              </Card>
-            ))}
+            {isLoading
+              ? [0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-60 rounded-2xl" />)
+              : mentors?.length
+                ? mentors.map((m) => (
+                    <Card key={m.id} className="glass rounded-2xl border-border/50 p-6 shadow-soft">
+                      <div className="flex items-center gap-3">
+                        <div className="size-12 rounded-full bg-gold-gradient" />
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold">{m.name}</div>
+                          <div className="truncate text-xs text-muted-foreground">{m.role}</div>
+                        </div>
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-1.5">
+                        {m.tags.map((t) => <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>)}
+                      </div>
+                      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{m.sessions} sessions</span>
+                        <span>★ {m.rating.toFixed(1)}</span>
+                      </div>
+                      <Button
+                        className="mt-4 w-full"
+                        onClick={() => createRequest.mutate(m.id)}
+                        disabled={createRequest.isPending}
+                      >
+                        Request mentorship
+                      </Button>
+                    </Card>
+                  ))
+                : <p className="text-sm text-muted-foreground">No mentors match your search.</p>}
           </div>
         </TabsContent>
 
-        <TabsContent value="active">
-          <Card className="glass rounded-2xl border-border/50 p-6 shadow-soft">
-            <div className="flex items-center gap-3">
-              <div className="size-12 rounded-full bg-gold-gradient" />
-              <div>
-                <div className="font-semibold">Prasetyo H.</div>
-                <div className="text-xs text-muted-foreground">Next session: Thursday 7:00 PM</div>
+        <TabsContent value="active" className="space-y-4">
+          {active.length ? active.map((r) => (
+            <Card key={r.id} className="glass rounded-2xl border-border/50 p-6 shadow-soft">
+              <div className="flex items-center gap-3">
+                <div className="size-12 rounded-full bg-gold-gradient" />
+                <div>
+                  <div className="font-semibold">{r.mentorName}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {r.nextSessionAt
+                      ? `Next session: ${new Date(r.nextSessionAt).toLocaleString(undefined, { weekday: "long", hour: "numeric", minute: "2-digit" })}`
+                      : r.status === "pending" ? "Request pending" : "No session scheduled"}
+                  </div>
+                </div>
+                <Button className="ml-auto" variant="outline">Message</Button>
               </div>
-              <Button className="ml-auto" variant="outline">Message</Button>
-            </div>
-            <div className="mt-6 space-y-3">
-              <div className="flex items-center justify-between text-sm"><span>Progress toward goal</span><span className="font-medium">62%</span></div>
-              <Progress value={62} />
-            </div>
-          </Card>
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center justify-between text-sm"><span>Progress toward goal</span><span className="font-medium">{r.progress}%</span></div>
+                <Progress value={r.progress} />
+              </div>
+            </Card>
+          )) : (
+            <Card className="glass rounded-2xl border-border/50 p-10 text-center text-sm text-muted-foreground shadow-soft">
+              No active mentorship yet — browse mentors and send your first request.
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="history">
           <div className="space-y-3">
-            {["Jun 24 · Career mapping", "Jun 10 · Interview prep", "May 27 · Kickoff & goal setting"].map((s) => (
-              <Card key={s} className="glass flex items-center justify-between rounded-2xl border-border/50 p-4 shadow-soft">
+            {sessions?.length ? sessions.map((s) => (
+              <Card key={s.id} className="glass flex items-center justify-between rounded-2xl border-border/50 p-4 shadow-soft">
                 <div className="flex items-center gap-3 text-sm">
                   <CheckCircle2 className="size-4 text-primary" />
-                  {s}
+                  {new Date(s.heldAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })} · {s.title}
                 </div>
                 <Button size="sm" variant="ghost">Notes</Button>
               </Card>
-            ))}
+            )) : <p className="text-sm text-muted-foreground">No past sessions yet.</p>}
           </div>
         </TabsContent>
 
         <TabsContent value="goals">
           <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              { g: "Land Tech Lead role", p: 62 },
-              { g: "Publish 3 articles this quarter", p: 33 },
-              { g: "Attend 2 diaspora meetups", p: 50 },
-              { g: "Complete system design course", p: 80 },
-            ].map((x) => (
-              <Card key={x.g} className="glass rounded-2xl border-border/50 p-5 shadow-soft">
-                <div className="flex items-center gap-2 text-sm font-semibold"><Target className="size-4 text-primary" /> {x.g}</div>
-                <Progress value={x.p} className="mt-4" />
-                <div className="mt-2 text-xs text-muted-foreground">{x.p}% complete</div>
+            {goals?.map((x) => (
+              <Card key={x.id} className="glass rounded-2xl border-border/50 p-5 shadow-soft">
+                <div className="flex items-center gap-2 text-sm font-semibold"><Target className="size-4 text-primary" /> {x.title}</div>
+                <Progress value={x.progress} className="mt-4" />
+                <div className="mt-2 text-xs text-muted-foreground">{x.progress}% complete</div>
               </Card>
             ))}
           </div>

@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Briefcase, Calendar, Plane, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+import { api } from "@/api";
 import { PageShell, PageHeader } from "@/components/layout/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/diaspora")({
   component: Diaspora,
@@ -11,23 +15,41 @@ export const Route = createFileRoute("/diaspora")({
     meta: [
       { title: "Diaspora — Garuda" },
       { name: "description", content: "Country chapters, gatherings, career sharing, and immigration tips for Indonesians abroad." },
+      { property: "og:title", content: "Diaspora — Garuda Empowerment Network" },
+      { property: "og:description", content: "Country chapters, gatherings, career sharing, and immigration tips for Indonesians abroad." },
     ],
     links: [{ rel: "canonical", href: "/diaspora" }],
   }),
 });
 
-const chapters = [
-  { flag: "🇳🇱", country: "Netherlands", city: "Amsterdam", members: 480 },
-  { flag: "🇩🇪", country: "Germany", city: "Berlin", members: 320 },
-  { flag: "🇯🇵", country: "Japan", city: "Tokyo", members: 610 },
-  { flag: "🇺🇸", country: "United States", city: "San Francisco", members: 540 },
-  { flag: "🇦🇺", country: "Australia", city: "Melbourne", members: 390 },
-  { flag: "🇸🇬", country: "Singapore", city: "Singapore", members: 1120 },
-  { flag: "🇬🇧", country: "United Kingdom", city: "London", members: 280 },
-  { flag: "🇦🇪", country: "UAE", city: "Dubai", members: 165 },
-];
-
 function Diaspora() {
+  const queryClient = useQueryClient();
+
+  const { data: chapters, isLoading } = useQuery({
+    queryKey: ["diaspora", "chapters"],
+    queryFn: () => api.diaspora.listChapters(),
+  });
+  const { data: gatherings } = useQuery({
+    queryKey: ["diaspora", "gatherings"],
+    queryFn: () => api.diaspora.listGatherings(),
+  });
+  const { data: guides } = useQuery({
+    queryKey: ["diaspora", "guides"],
+    queryFn: () => api.diaspora.listGuides(),
+  });
+
+  const toggleJoin = useMutation({
+    mutationFn: (slug: string) => api.diaspora.toggleJoinChapter(slug),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ["diaspora", "chapters"] });
+      toast.success(res.joined ? "Chapter joined" : "Left chapter");
+    },
+    onError: () => toast.error("Sign in to join a chapter"),
+  });
+
+  const career = guides?.filter((g) => g.kind === "career") ?? [];
+  const immigration = guides?.filter((g) => g.kind === "immigration") ?? [];
+
   return (
     <PageShell>
       <PageHeader
@@ -40,18 +62,28 @@ function Diaspora() {
       <section className="mb-10">
         <h2 className="mb-4 text-lg font-semibold">Country chapters</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {chapters.map((c) => (
-            <Card key={c.country} className="glass group rounded-2xl border-border/50 p-5 shadow-soft transition hover:-translate-y-0.5 hover:shadow-glow">
-              <div className="flex items-center gap-3">
-                <div className="text-3xl">{c.flag}</div>
-                <div>
-                  <div className="font-semibold">{c.country}</div>
-                  <div className="text-xs text-muted-foreground">{c.city} · {c.members} members</div>
-                </div>
-              </div>
-              <Button variant="ghost" size="sm" className="mt-4 w-full justify-center">Join chapter</Button>
-            </Card>
-          ))}
+          {isLoading
+            ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-36 rounded-2xl" />)
+            : chapters?.map((c) => (
+                <Card key={c.slug} className="glass group rounded-2xl border-border/50 p-5 shadow-soft transition hover:-translate-y-0.5 hover:shadow-glow">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">{c.flag}</div>
+                    <div>
+                      <div className="font-semibold">{c.country}</div>
+                      <div className="text-xs text-muted-foreground">{c.city} · {c.members} members</div>
+                    </div>
+                  </div>
+                  <Button
+                    variant={c.joined ? "secondary" : "ghost"}
+                    size="sm"
+                    className="mt-4 w-full justify-center"
+                    onClick={() => toggleJoin.mutate(c.slug)}
+                    disabled={toggleJoin.isPending}
+                  >
+                    {c.joined ? "Joined" : "Join chapter"}
+                  </Button>
+                </Card>
+              ))}
         </div>
       </section>
 
@@ -59,26 +91,27 @@ function Diaspora() {
         <Card className="glass rounded-2xl border-border/50 p-6 shadow-soft">
           <div className="mb-3 flex items-center gap-2 font-semibold"><Calendar className="size-4 text-primary" /> Upcoming gatherings</div>
           <ul className="space-y-3 text-sm">
-            {["Berlin Bakso Night · Aug 3", "Tokyo Onsen & Networking · Aug 10", "SF Independence Day Picnic · Aug 17"].map((x) => (
-              <li key={x} className="flex items-center justify-between gap-2"><span className="min-w-0 truncate">{x}</span><Button size="sm" variant="ghost">RSVP</Button></li>
-            ))}
+            {gatherings?.length ? gatherings.map((g) => (
+              <li key={g.id} className="flex items-center justify-between gap-2">
+                <span className="min-w-0 truncate">{g.title} · {new Date(g.date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+                <Button size="sm" variant="ghost">RSVP</Button>
+              </li>
+            )) : <li className="text-muted-foreground">No gatherings scheduled yet.</li>}
           </ul>
         </Card>
         <Card className="glass rounded-2xl border-border/50 p-6 shadow-soft">
           <div className="mb-3 flex items-center gap-2 font-semibold"><Briefcase className="size-4 text-primary" /> Career sharing</div>
           <ul className="space-y-3 text-sm text-muted-foreground">
-            <li>"How I got a work visa in the Netherlands in 6 weeks" — Rendy</li>
-            <li>"From Bandung to Berlin: relocating with family" — Nadia</li>
-            <li>"Interviewing at Japanese firms in English" — Yoga</li>
+            {career.map((g) => (
+              <li key={g.id}>"{g.title}"{g.author ? ` — ${g.author}` : ""}</li>
+            ))}
           </ul>
-          <Badge variant="secondary" className="mt-4">32 open referrals</Badge>
+          <Badge variant="secondary" className="mt-4">{career.length} stories shared</Badge>
         </Card>
         <Card className="glass rounded-2xl border-border/50 p-6 shadow-soft">
           <div className="mb-3 flex items-center gap-2 font-semibold"><Plane className="size-4 text-primary" /> Immigration tips</div>
           <ul className="space-y-3 text-sm text-muted-foreground">
-            <li>Blue Card timeline & salary thresholds (2026)</li>
-            <li>Australia 189 vs 190 — which fits you</li>
-            <li>Renewing tourist-to-work in Singapore</li>
+            {immigration.map((g) => <li key={g.id}>{g.title}</li>)}
           </ul>
           <Button variant="link" className="mt-2 h-auto p-0">Browse all guides →</Button>
         </Card>
