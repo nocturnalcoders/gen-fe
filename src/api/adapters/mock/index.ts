@@ -326,6 +326,115 @@ function overlap(topics: string[], interests: string[]) {
   );
 }
 
+function matchTokens(haystack: string[], wanted: string[]) {
+  const w = normalize(wanted);
+  return haystack.filter((t) =>
+    w.some((x) => t.toLowerCase().includes(x) || x.includes(t.toLowerCase())),
+  );
+}
+
+/**
+ * Compatibility score built from real signals:
+ * interests/skills overlap, mentorship history (mentors already engaged and the
+ * topics of past requests), session activity, active goals, and mentor quality.
+ */
+function scoreMentor(mentor: Mentor, interests: string[], skills: string[]): RecommendedMentor {
+  const signals: MentorMatchSignal[] = [];
+  const surface = [...mentor.tags, mentor.role];
+
+  const interestHits = matchTokens(surface, interests);
+  if (interestHits.length) {
+    signals.push({
+      kind: "interest",
+      label: `Shares your interests: ${interestHits.slice(0, 2).join(", ")}`,
+      points: Math.min(30, interestHits.length * 15),
+    });
+  }
+
+  const skillHits = matchTokens(surface, skills);
+  if (skillHits.length) {
+    signals.push({
+      kind: "skill",
+      label: `Works on your skills: ${skillHits.slice(0, 2).join(", ")}`,
+      points: Math.min(25, skillHits.length * 13),
+    });
+  }
+
+  // Mentorship history: topics of mentors you already worked with.
+  const myRequests = requests.filter((r) => r.menteeId === "me");
+  const pastMentorIds = myRequests.map((r) => r.mentorId);
+  const historyTopics = pastMentorIds.flatMap(
+    (id) => mentors.find((m) => m.id === id)?.tags ?? [],
+  );
+  if (pastMentorIds.includes(mentor.id)) {
+    const active = myRequests.find((r) => r.mentorId === mentor.id);
+    signals.push({
+      kind: "history",
+      label:
+        active?.status === "accepted"
+          ? "Your current mentor — continue the journey"
+          : "You have worked together before",
+      points: active?.status === "accepted" ? 20 : 12,
+    });
+  } else {
+    const adjacency = matchTokens(mentor.tags, historyTopics);
+    if (adjacency.length) {
+      signals.push({
+        kind: "history",
+        label: `Similar to your past mentorship on ${adjacency.slice(0, 2).join(", ")}`,
+        points: Math.min(18, adjacency.length * 9),
+      });
+    }
+  }
+
+  // Session activity: how engaged you are plus how experienced the mentor is.
+  const mySessionCount = sessions.filter((s) =>
+    myRequests.some((r) => r.id === s.requestId),
+  ).length;
+  if (mySessionCount >= 2 && mentor.sessions >= 80) {
+    signals.push({
+      kind: "session",
+      label: `Handles regular cadence (${mentor.sessions} sessions mentored)`,
+      points: 10,
+    });
+  }
+
+  // Goals you are tracking.
+  const goalHits = matchTokens(
+    surface,
+    goals.filter((g) => g.progress < 100).map((g) => g.title),
+  );
+  if (goalHits.length) {
+    signals.push({
+      kind: "goal",
+      label: `Can help with your open goals (${goalHits.slice(0, 2).join(", ")})`,
+      points: Math.min(15, goalHits.length * 8),
+    });
+  }
+
+  signals.push({
+    kind: "quality",
+    label: `${mentor.rating.toFixed(1)}★ rating · ${mentor.sessions} sessions`,
+    points: Math.round((mentor.rating / 5) * 12),
+  });
+
+  const score = Math.max(
+    5,
+    Math.min(100, signals.reduce((sum, s) => sum + s.points, 0)),
+  );
+
+  const matchedOn = Array.from(new Set([...interestHits, ...skillHits, ...goalHits]));
+
+  return {
+    id: mentor.id,
+    name: mentor.name,
+    role: mentor.role,
+    matchedOn: (matchedOn.length ? matchedOn : mentor.tags).slice(0, 2),
+    score,
+    signals: signals.sort((a, b) => b.points - a.points).slice(0, 3),
+  };
+}
+
 export const mockDashboard: DashboardApi = {
   feed: async (query) => {
     const wanted = [...(query?.interests ?? []), ...(query?.skills ?? [])];
@@ -336,24 +445,21 @@ export const mockDashboard: DashboardApi = {
       .map((s) => s.post);
   },
   summary: async (query) => {
-    const wanted = [...(query?.interests ?? []), ...(query?.skills ?? [])];
-    if (!normalize(wanted).length) return summary;
+    const interests = query?.interests ?? [];
+    const skills = query?.skills ?? [];
+    const wanted = [...interests, ...skills];
 
     const recommendedMentors = mentors
-      .map((m) => ({ mentor: m, matchedOn: overlap([...m.tags, m.role], wanted) }))
-      .sort((a, b) => b.matchedOn.length - a.matchedOn.length || b.mentor.rating - a.mentor.rating)
-      .slice(0, 3)
-      .map(({ mentor, matchedOn }) => ({
-        id: mentor.id,
-        name: mentor.name,
-        role: mentor.role,
-        matchedOn: matchedOn.length ? matchedOn.slice(0, 2) : mentor.tags.slice(0, 1),
-      }));
+      .map((m) => scoreMentor(m, interests, skills))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
 
-    const communityUpdates = [...summary.communityUpdates].sort(
-      (a, b) =>
-        overlap([b.topic ?? ""], wanted).length - overlap([a.topic ?? ""], wanted).length,
-    );
+    const communityUpdates = normalize(wanted).length
+      ? [...summary.communityUpdates].sort(
+          (a, b) =>
+            overlap([b.topic ?? ""], wanted).length - overlap([a.topic ?? ""], wanted).length,
+        )
+      : summary.communityUpdates;
 
     return { ...summary, recommendedMentors, communityUpdates };
   },
