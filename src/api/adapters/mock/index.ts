@@ -24,6 +24,8 @@ import type {
   Member,
   MembersApi,
   Mentor,
+  MentorMatchSignal,
+  RecommendedMentor,
   MentorshipApi,
   MentorshipRequest,
   MentorshipSession,
