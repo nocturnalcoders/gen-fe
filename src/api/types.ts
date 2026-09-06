@@ -221,6 +221,22 @@ export type CommunityUpdate = {
   topic: string | null;
 };
 
+export type MentorMatchSignal = {
+  kind: "interest" | "skill" | "history" | "session" | "goal" | "quality";
+  label: string;
+  points: number;
+};
+
+export type RecommendedMentor = {
+  id: ID;
+  name: string;
+  role: string;
+  matchedOn: string[];
+  /** 0-100 compatibility score */
+  score: number;
+  signals: MentorMatchSignal[];
+};
+
 export type DashboardSummary = {
   stats: { label: string; value: string }[];
   upcomingEvents: { id: ID; title: string; date: string }[];
@@ -230,7 +246,7 @@ export type DashboardSummary = {
     progress: number;
     nextSession: string;
   } | null;
-  recommendedMentors: { id: ID; name: string; role: string; matchedOn: string[] }[];
+  recommendedMentors: RecommendedMentor[];
   communityUpdates: CommunityUpdate[];
 };
 

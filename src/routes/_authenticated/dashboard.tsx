@@ -287,18 +287,31 @@ function Dashboard() {
             <div className="mb-3 text-sm font-semibold">Recommended mentors</div>
             <ul className="space-y-3">
               {(summary?.recommendedMentors ?? []).map((m) => (
-                <li key={m.id} className="flex items-center gap-3">
-                  <div className="size-9 rounded-full bg-gold-gradient" />
-                  <div className="min-w-0 flex-1 text-sm">
-                    <div className="truncate font-medium">{m.name}</div>
-                    <div className="truncate text-xs text-muted-foreground">{m.role}</div>
-                    {m.matchedOn.length > 0 && (
-                      <div className="truncate text-[11px] text-primary">
-                        Match: {m.matchedOn.join(", ")}
-                      </div>
-                    )}
+                <li key={m.id} className="rounded-xl border border-border/50 p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-9 shrink-0 rounded-full bg-gold-gradient" />
+                    <div className="min-w-0 flex-1 text-sm">
+                      <div className="truncate font-medium">{m.name}</div>
+                      <div className="truncate text-xs text-muted-foreground">{m.role}</div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="text-sm font-semibold text-primary">{m.score}%</div>
+                      <div className="text-[10px] text-muted-foreground">match</div>
+                    </div>
                   </div>
-                  <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
+                  <Progress
+                    value={m.score}
+                    className="mt-2 h-1.5"
+                    aria-label={`Match score ${m.score} percent for ${m.name}`}
+                  />
+                  <ul className="mt-2 space-y-1 text-[11px] text-muted-foreground">
+                    {m.signals.map((s, i) => (
+                      <li key={`${m.id}-${i}`} className="truncate">
+                        · {s.label}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button size="sm" variant="outline" className="mt-2 h-7 w-full text-xs" asChild>
                     <Link to="/mentorship">Connect</Link>
                   </Button>
                 </li>
