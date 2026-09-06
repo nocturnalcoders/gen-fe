@@ -142,10 +142,15 @@ const notifications: AppNotification[] = [
 ];
 
 const feed: FeedPost[] = [
-  { id: "f1", authorName: "Ayu Pratiwi", authorAvatarUrl: null, createdAt: new Date(Date.now() - 45 * 6e4).toISOString(), body: "Just wrapped a mentorship session on system design — sharing my notes in the articles section soon!", likes: 42, comments: 8 },
-  { id: "f2", authorName: "Rendy Sinaga", authorAvatarUrl: null, createdAt: new Date(Date.now() - 5 * 36e5).toISOString(), body: "Amsterdam chapter coffee meetup was packed. Next one in two weeks — bring a friend.", likes: 67, comments: 12 },
-  { id: "f3", authorName: "Farhan Aditya", authorAvatarUrl: null, createdAt: new Date(Date.now() - 26 * 36e5).toISOString(), body: "Looking for a running buddy in Singapore for weekend 10Ks. Anyone in?", likes: 23, comments: 15 },
+  { id: "f1", authorName: "Ayu Pratiwi", authorAvatarUrl: null, createdAt: new Date(Date.now() - 45 * 6e4).toISOString(), body: "Just wrapped a mentorship session on system design — sharing my notes in the articles section soon!", likes: 42, comments: 8, topics: ["System Design", "Mentorship", "Engineering"], source: "mentorship" },
+  { id: "f2", authorName: "Rendy Sinaga", authorAvatarUrl: null, createdAt: new Date(Date.now() - 5 * 36e5).toISOString(), body: "Amsterdam chapter coffee meetup was packed. Next one in two weeks — bring a friend.", likes: 67, comments: 12, topics: ["Coffee", "Netherlands", "Diaspora"], source: "community" },
+  { id: "f3", authorName: "Farhan Aditya", authorAvatarUrl: null, createdAt: new Date(Date.now() - 26 * 36e5).toISOString(), body: "Looking for a running buddy in Singapore for weekend 10Ks. Anyone in?", likes: 23, comments: 15, topics: ["Running", "Singapore", "ActiveGen"], source: "activity" },
+  { id: "f4", authorName: "Nadia Wibowo", authorAvatarUrl: null, createdAt: new Date(Date.now() - 9 * 36e5).toISOString(), body: "Updated the Blue Card guide with the 2026 salary thresholds. Questions welcome.", likes: 128, comments: 34, topics: ["Immigration", "EU Visa", "Germany"], source: "article" },
+  { id: "f5", authorName: "Kirana W.", authorAvatarUrl: null, createdAt: new Date(Date.now() - 34 * 36e5).toISOString(), body: "Sunrise hike at Tangkuban Perahu this Sunday — 12 spots left.", likes: 91, comments: 8, topics: ["Hiking", "ActiveGen", "Bandung"], source: "activity" },
+  { id: "f6", authorName: "Bagas Setya", authorAvatarUrl: null, createdAt: new Date(Date.now() - 50 * 36e5).toISOString(), body: "Founders roundtable next Friday: pricing, fundraising, and hiring your first PM.", likes: 74, comments: 19, topics: ["Startup", "Fundraising", "Founder"], source: "event" },
+  { id: "f7", authorName: "Sinta Larasati", authorAvatarUrl: null, createdAt: new Date(Date.now() - 70 * 36e5).toISOString(), body: "Product interview prep group is open again — 6 seats, 4 weeks, free for members.", likes: 58, comments: 11, topics: ["Product", "Career", "Mentorship"], source: "community" },
 ];
+
 
 export const mockMembers: MembersApi = {
   list: async (query) => {
