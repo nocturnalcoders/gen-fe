@@ -189,9 +189,16 @@ const notifications: NotificationsApi = {
   markAllRead: () => http.post<void>("/notifications/read-all"),
 };
 
+function personalizationParams(query?: { interests?: string[]; skills?: string[] }) {
+  return {
+    interests: query?.interests?.length ? query.interests.join(",") : undefined,
+    skills: query?.skills?.length ? query.skills.join(",") : undefined,
+  };
+}
+
 const dashboard: DashboardApi = {
-  feed: () => http.get<FeedPost[]>("/dashboard/feed"),
-  summary: () => http.get<DashboardSummary>("/dashboard/summary"),
+  feed: (query) => http.get<FeedPost[]>("/dashboard/feed", personalizationParams(query)),
+  summary: (query) => http.get<DashboardSummary>("/dashboard/summary", personalizationParams(query)),
 };
 
 const admin: AdminApi = {
@@ -200,6 +207,10 @@ const admin: AdminApi = {
   listEvents: () => http.get("/admin/events"),
   listModeration: () => http.get("/admin/moderation"),
   listReports: () => http.get("/admin/reports"),
+  setMemberStatus: ({ id, status }) => http.patch(`/admin/members/${id}`, { status }),
+  moderate: ({ id, action }) => http.post(`/admin/moderation/${id}/${action}`),
+  analytics: () => http.get("/admin/analytics"),
+  generateReport: ({ range }) => http.post("/admin/reports/generate", { range }),
 };
 
 export const restApi: ApiClient = {

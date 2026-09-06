@@ -211,6 +211,14 @@ export type FeedPost = {
   body: string;
   likes: number;
   comments: number;
+  topics: string[];
+  source: "community" | "mentorship" | "activity" | "event" | "article";
+};
+
+export type CommunityUpdate = {
+  id: ID;
+  text: string;
+  topic: string | null;
 };
 
 export type DashboardSummary = {
@@ -222,18 +230,25 @@ export type DashboardSummary = {
     progress: number;
     nextSession: string;
   } | null;
-  recommendedMentors: { id: ID; name: string; role: string }[];
-  communityUpdates: string[];
+  recommendedMentors: { id: ID; name: string; role: string; matchedOn: string[] }[];
+  communityUpdates: CommunityUpdate[];
+};
+
+export type PersonalizationQuery = {
+  interests?: string[];
+  skills?: string[];
 };
 
 export type AdminStats = { label: string; value: string }[];
+
+export type AdminMemberStatus = "Active" | "Mentor" | "Pending" | "Suspended";
 
 export type AdminMemberRow = {
   id: ID;
   name: string;
   country: string;
   joined: string;
-  status: "Active" | "Mentor" | "Pending" | "Suspended";
+  status: AdminMemberStatus;
 };
 
 export type AdminEventRow = {
@@ -257,6 +272,21 @@ export type AdminReport = {
   label: string;
   value: string;
 };
+
+export type AdminAnalytics = {
+  memberGrowth: { label: string; members: number }[];
+  engagement: { label: string; value: number }[];
+};
+
+export type AdminReportRange = "7d" | "30d" | "90d";
+
+export type AdminGeneratedReport = {
+  id: ID;
+  range: AdminReportRange;
+  generatedAt: string;
+  rows: AdminReport[];
+};
+
 
 // ---------------------------------------------------------------------------
 // The API surface. Every adapter (cloud / rest / mock) implements this.
@@ -350,8 +380,8 @@ export type NotificationsApi = {
 };
 
 export type DashboardApi = {
-  feed: () => Promise<FeedPost[]>;
-  summary: () => Promise<DashboardSummary>;
+  feed: (query?: PersonalizationQuery) => Promise<FeedPost[]>;
+  summary: (query?: PersonalizationQuery) => Promise<DashboardSummary>;
 };
 
 export type AdminApi = {
@@ -360,7 +390,12 @@ export type AdminApi = {
   listEvents: () => Promise<AdminEventRow[]>;
   listModeration: () => Promise<ModerationItem[]>;
   listReports: () => Promise<AdminReport[]>;
+  setMemberStatus: (input: { id: ID; status: AdminMemberStatus }) => Promise<AdminMemberRow>;
+  moderate: (input: { id: ID; action: "approve" | "reject" }) => Promise<ModerationItem>;
+  analytics: () => Promise<AdminAnalytics>;
+  generateReport: (input: { range: AdminReportRange }) => Promise<AdminGeneratedReport>;
 };
+
 
 export interface ApiClient {
   auth: AuthApi;
