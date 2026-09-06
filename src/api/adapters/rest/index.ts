@@ -189,9 +189,16 @@ const notifications: NotificationsApi = {
   markAllRead: () => http.post<void>("/notifications/read-all"),
 };
 
+function personalizationParams(query?: { interests?: string[]; skills?: string[] }) {
+  return {
+    interests: query?.interests?.length ? query.interests.join(",") : undefined,
+    skills: query?.skills?.length ? query.skills.join(",") : undefined,
+  };
+}
+
 const dashboard: DashboardApi = {
-  feed: (query) => http.get<FeedPost[]>("/dashboard/feed", query),
-  summary: (query) => http.get<DashboardSummary>("/dashboard/summary", query),
+  feed: (query) => http.get<FeedPost[]>("/dashboard/feed", personalizationParams(query)),
+  summary: (query) => http.get<DashboardSummary>("/dashboard/summary", personalizationParams(query)),
 };
 
 const admin: AdminApi = {
