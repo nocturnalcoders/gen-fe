@@ -24,6 +24,9 @@ import type {
   Member,
   MembersApi,
   Mentor,
+  MentorshipRequestStatus,
+  AdminMemberDetail,
+  AdminMentorshipRecord,
   MentorMatchSignal,
   RecommendedMentor,
   MentorshipApi,
@@ -518,9 +521,185 @@ const analytics: AdminAnalytics = {
   ],
 };
 
+type MemberMentorshipSeed = {
+  headline: string;
+  skills: string[];
+  interests: string[];
+  mentorships: {
+    mentorName: string;
+    status: MentorshipRequestStatus;
+    progress: number;
+    startedDaysAgo: number;
+    nextSessionInDays: number | null;
+    sessions: { title: string; daysAgo: number; notes: string | null }[];
+    goals: Goal[];
+  }[];
+};
+
+const memberMentorshipSeeds: Record<string, MemberMentorshipSeed> = {
+  m1: {
+    headline: "Engineering Manager mentoring career switchers",
+    skills: ["Leadership", "Career"],
+    interests: ["Hiking", "Product"],
+    mentorships: [
+      {
+        mentorName: "Prasetyo H.",
+        status: "accepted",
+        progress: 70,
+        startedDaysAgo: 60,
+        nextSessionInDays: -6,
+        sessions: [
+          { title: "Career mapping", daysAgo: 48, notes: "Set 90-day plan." },
+          { title: "Stakeholder management", daysAgo: 20, notes: "Role play feedback." },
+        ],
+        goals: [
+          { id: "m1g1", title: "Lead a cross-team project", progress: 80 },
+          { id: "m1g2", title: "Mentor two juniors", progress: 100 },
+        ],
+      },
+    ],
+  },
+  m2: {
+    headline: "Product designer relocating to Amsterdam",
+    skills: ["UX", "Research"],
+    interests: ["Coffee", "Running"],
+    mentorships: [
+      {
+        mentorName: "Dewi Ratna",
+        status: "accepted",
+        progress: 35,
+        startedDaysAgo: 25,
+        nextSessionInDays: 4,
+        sessions: [{ title: "Portfolio review", daysAgo: 12, notes: "Three case studies picked." }],
+        goals: [{ id: "m2g1", title: "Publish new portfolio", progress: 45 }],
+      },
+      {
+        mentorName: "Nadia Wibowo",
+        status: "completed",
+        progress: 100,
+        startedDaysAgo: 150,
+        nextSessionInDays: null,
+        sessions: [{ title: "Visa timeline planning", daysAgo: 120, notes: "Documents checklist." }],
+        goals: [{ id: "m2g2", title: "Secure work permit", progress: 100 }],
+      },
+    ],
+  },
+  m3: {
+    headline: "Staff engineer coaching system design",
+    skills: ["System Design"],
+    interests: ["Running"],
+    mentorships: [
+      {
+        mentorName: "Yoga Pradana",
+        status: "accepted",
+        progress: 55,
+        startedDaysAgo: 40,
+        nextSessionInDays: -13,
+        sessions: [
+          { title: "Scaling fundamentals", daysAgo: 35, notes: null },
+          { title: "Mock interview", daysAgo: 18, notes: "Needs depth on tradeoffs." },
+        ],
+        goals: [
+          { id: "m3g1", title: "Pass staff-level interview", progress: 60 },
+          { id: "m3g2", title: "Write a design doc", progress: 30 },
+        ],
+      },
+    ],
+  },
+  m6: {
+    headline: "Immigration consultant, new member",
+    skills: ["EU Visa"],
+    interests: ["Cooking"],
+    mentorships: [
+      {
+        mentorName: "Sinta Larasati",
+        status: "pending",
+        progress: 0,
+        startedDaysAgo: 5,
+        nextSessionInDays: null,
+        sessions: [],
+        goals: [],
+      },
+    ],
+  },
+  m7: {
+    headline: "Frontend engineer in Singapore",
+    skills: ["React", "Frontend"],
+    interests: ["Football"],
+    mentorships: [
+      {
+        mentorName: "Bagas Setya",
+        status: "accepted",
+        progress: 20,
+        startedDaysAgo: 15,
+        nextSessionInDays: 2,
+        sessions: [{ title: "Kickoff", daysAgo: 10, notes: "Discussed side project." }],
+        goals: [{ id: "m7g1", title: "Ship a side project", progress: 25 }],
+      },
+    ],
+  },
+};
+
+function buildMemberDetail(row: AdminMemberRow): AdminMemberDetail {
+  const seed = memberMentorshipSeeds[row.id];
+  const now = Date.now();
+  const mentorships: AdminMentorshipRecord[] = (seed?.mentorships ?? []).map((m, i) => {
+    const nextSessionAt =
+      m.nextSessionInDays === null ? null : new Date(now + m.nextSessionInDays * 864e5).toISOString();
+    const overdueDays =
+      m.status === "accepted" && m.nextSessionInDays !== null && m.nextSessionInDays < 0
+        ? Math.abs(m.nextSessionInDays)
+        : null;
+    return {
+      id: `${row.id}-ms${i + 1}`,
+      mentorName: m.mentorName,
+      status: m.status,
+      progress: m.progress,
+      startedAt: new Date(now - m.startedDaysAgo * 864e5).toISOString(),
+      nextSessionAt,
+      overdueDays,
+      sessions: m.sessions
+        .map((s, j) => ({
+          id: `${row.id}-s${i + 1}${j + 1}`,
+          title: s.title,
+          heldAt: new Date(now - s.daysAgo * 864e5).toISOString(),
+          notes: s.notes,
+        }))
+        .sort((a, b) => +new Date(b.heldAt) - +new Date(a.heldAt)),
+      goals: m.goals,
+    };
+  });
+
+  const allGoals = mentorships.flatMap((m) => m.goals);
+  const sessionCount = mentorships.reduce((sum, m) => sum + m.sessions.length, 0);
+
+  return {
+    member: row,
+    headline: seed?.headline ?? null,
+    skills: seed?.skills ?? [],
+    interests: seed?.interests ?? [],
+    mentorships,
+    totals: {
+      mentorships: mentorships.length,
+      sessions: sessionCount,
+      avgProgress: mentorships.length
+        ? Math.round(mentorships.reduce((s, m) => s + m.progress, 0) / mentorships.length)
+        : 0,
+      overdueSessions: mentorships.filter((m) => m.overdueDays !== null).length,
+      goalsCompleted: allGoals.filter((g) => g.progress >= 100).length,
+      goalsTotal: allGoals.length,
+    },
+  };
+}
+
 export const mockAdmin: AdminApi = {
   stats: async () => adminStats,
   listMembers: async () => adminMembers,
+  memberDetail: async (id) => {
+    const row = adminMembers.find((m) => m.id === id);
+    if (!row) throw new Error("Member not found");
+    return buildMemberDetail(row);
+  },
   listEvents: async () => adminEvents,
   listModeration: async () => moderation,
   listReports: async () => reports,

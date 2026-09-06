@@ -25,6 +25,8 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminMembersIdRouteImport } from './routes/_authenticated/admin.members.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -106,6 +108,17 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminMembersIdRoute =
+  AuthenticatedAdminMembersIdRouteImport.update({
+    id: '/members/$id',
+    path: '/members/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -115,7 +128,7 @@ export interface FileRoutesByFullPath {
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -123,6 +136,8 @@ export interface FileRoutesByFullPath {
   '/events/$id': typeof EventsIdRoute
   '/activegen/': typeof ActivegenIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/members/$id': typeof AuthenticatedAdminMembersIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -132,7 +147,6 @@ export interface FileRoutesByTo {
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -140,6 +154,8 @@ export interface FileRoutesByTo {
   '/events/$id': typeof EventsIdRoute
   '/activegen': typeof ActivegenIndexRoute
   '/events': typeof EventsIndexRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/members/$id': typeof AuthenticatedAdminMembersIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -151,7 +167,7 @@ export interface FileRoutesById {
   '/members': typeof MembersRoute
   '/mentorship': typeof MentorshipRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -159,6 +175,8 @@ export interface FileRoutesById {
   '/events/$id': typeof EventsIdRoute
   '/activegen/': typeof ActivegenIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/members/$id': typeof AuthenticatedAdminMembersIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -178,6 +196,8 @@ export interface FileRouteTypes {
     | '/events/$id'
     | '/activegen/'
     | '/events/'
+    | '/admin/'
+    | '/admin/members/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -187,7 +207,6 @@ export interface FileRouteTypes {
     | '/members'
     | '/mentorship'
     | '/sitemap.xml'
-    | '/admin'
     | '/dashboard'
     | '/notifications'
     | '/profile'
@@ -195,6 +214,8 @@ export interface FileRouteTypes {
     | '/events/$id'
     | '/activegen'
     | '/events'
+    | '/admin'
+    | '/admin/members/$id'
   id:
     | '__root__'
     | '/'
@@ -213,6 +234,8 @@ export interface FileRouteTypes {
     | '/events/$id'
     | '/activegen/'
     | '/events/'
+    | '/_authenticated/admin/'
+    | '/_authenticated/admin/members/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -344,18 +367,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/members/$id': {
+      id: '/_authenticated/admin/members/$id'
+      path: '/members/$id'
+      fullPath: '/admin/members/$id'
+      preLoaderRoute: typeof AuthenticatedAdminMembersIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminMembersIdRoute: typeof AuthenticatedAdminMembersIdRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminMembersIdRoute: AuthenticatedAdminMembersIdRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,

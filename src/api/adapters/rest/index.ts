@@ -204,6 +204,7 @@ const dashboard: DashboardApi = {
 const admin: AdminApi = {
   stats: () => http.get("/admin/stats"),
   listMembers: () => http.get("/admin/members"),
+  memberDetail: (id) => http.get(`/admin/members/${id}`),
   listEvents: () => http.get("/admin/events"),
   listModeration: () => http.get("/admin/moderation"),
   listReports: () => http.get("/admin/reports"),
