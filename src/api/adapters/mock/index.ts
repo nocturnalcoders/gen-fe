@@ -301,17 +301,61 @@ const summary: DashboardSummary = {
     progress: 60,
     nextSession: new Date(Date.now() + 3 * 864e5).toISOString(),
   },
-  recommendedMentors: mentors.slice(0, 3).map((m) => ({ id: m.id, name: m.name, role: m.role })),
+  recommendedMentors: mentors.slice(0, 3).map((m) => ({ id: m.id, name: m.name, role: m.role, matchedOn: m.tags.slice(0, 2) })),
   communityUpdates: [
-    "Singapore chapter passed 1,100 members",
-    "New immigration guide published for the Netherlands",
-    "ActiveGen added 6 new activities this week",
+    { id: "cu1", text: "Singapore chapter passed 1,100 members", topic: "Singapore" },
+    { id: "cu2", text: "New immigration guide published for the Netherlands", topic: "Immigration" },
+    { id: "cu3", text: "ActiveGen added 6 new activities this week", topic: "ActiveGen" },
+    { id: "cu4", text: "3 new product mentors joined this week", topic: "Product" },
+    { id: "cu5", text: "Hiking group opened a monthly sunrise series", topic: "Hiking" },
+    { id: "cu6", text: "System design study circle restarts on Monday", topic: "System Design" },
   ],
 };
 
+function normalize(values: (string | null | undefined)[]) {
+  return values
+    .filter((v): v is string => Boolean(v && v.trim()))
+    .map((v) => v.toLowerCase().trim());
+}
+
+function overlap(topics: string[], interests: string[]) {
+  const wanted = normalize(interests);
+  return topics.filter((t) =>
+    wanted.some((w) => t.toLowerCase().includes(w) || w.includes(t.toLowerCase())),
+  );
+}
+
 export const mockDashboard: DashboardApi = {
-  feed: async () => feed,
-  summary: async () => summary,
+  feed: async (query) => {
+    const wanted = [...(query?.interests ?? []), ...(query?.skills ?? [])];
+    if (!normalize(wanted).length) return feed;
+    const scored = feed.map((p) => ({ post: p, score: overlap(p.topics, wanted).length }));
+    return scored
+      .sort((a, b) => b.score - a.score || +new Date(b.post.createdAt) - +new Date(a.post.createdAt))
+      .map((s) => s.post);
+  },
+  summary: async (query) => {
+    const wanted = [...(query?.interests ?? []), ...(query?.skills ?? [])];
+    if (!normalize(wanted).length) return summary;
+
+    const recommendedMentors = mentors
+      .map((m) => ({ mentor: m, matchedOn: overlap([...m.tags, m.role], wanted) }))
+      .sort((a, b) => b.matchedOn.length - a.matchedOn.length || b.mentor.rating - a.mentor.rating)
+      .slice(0, 3)
+      .map(({ mentor, matchedOn }) => ({
+        id: mentor.id,
+        name: mentor.name,
+        role: mentor.role,
+        matchedOn: matchedOn.length ? matchedOn.slice(0, 2) : mentor.tags.slice(0, 1),
+      }));
+
+    const communityUpdates = [...summary.communityUpdates].sort(
+      (a, b) =>
+        overlap([b.topic ?? ""], wanted).length - overlap([a.topic ?? ""], wanted).length,
+    );
+
+    return { ...summary, recommendedMentors, communityUpdates };
+  },
 };
 
 const adminStats: AdminStats = [
@@ -326,6 +370,8 @@ const adminMembers: AdminMemberRow[] = [
   { id: "m2", name: "Rendy Sinaga", country: "Netherlands", joined: "2025-06-02", status: "Active" },
   { id: "m3", name: "Yoga Pradana", country: "United States", joined: "2025-08-19", status: "Mentor" },
   { id: "m6", name: "Nadia Wibowo", country: "Germany", joined: "2026-01-08", status: "Pending" },
+  { id: "m7", name: "Dimas Prayoga", country: "Singapore", joined: "2026-02-14", status: "Active" },
+  { id: "m8", name: "Anonymous Promo Bot", country: "Unknown", joined: "2026-08-01", status: "Suspended" },
 ];
 
 const adminEvents: AdminEventRow[] = [
@@ -336,13 +382,32 @@ const adminEvents: AdminEventRow[] = [
 const moderation: ModerationItem[] = [
   { id: "mo1", title: "Blue Card in Germany: the honest 2026 guide", author: "Nadia W.", reason: "Contains external links", status: "pending" },
   { id: "mo2", title: "Bootstrapping a SaaS from a kost in Yogyakarta", author: "Bagas S.", reason: "Flagged as promotional", status: "pending" },
+  { id: "mo3", title: "Get rich quick with crypto signals", author: "Unknown", reason: "Reported as spam", status: "pending" },
 ];
 
 const reports: AdminReport[] = [
   { id: "r1", label: "Monthly active members", value: "3,180" },
   { id: "r2", label: "Average event attendance", value: "76%" },
   { id: "r3", label: "Mentorship completion rate", value: "68%" },
+  { id: "r4", label: "Articles published", value: "142" },
 ];
+
+const analytics: AdminAnalytics = {
+  memberGrowth: [
+    { label: "Mar", members: 3120 },
+    { label: "Apr", members: 3540 },
+    { label: "May", members: 3980 },
+    { label: "Jun", members: 4420 },
+    { label: "Jul", members: 4910 },
+    { label: "Aug", members: 5420 },
+  ],
+  engagement: [
+    { label: "Feed posts / week", value: 312 },
+    { label: "Event RSVPs / week", value: 186 },
+    { label: "Mentorship sessions / week", value: 74 },
+    { label: "New articles / week", value: 21 },
+  ],
+};
 
 export const mockAdmin: AdminApi = {
   stats: async () => adminStats,
@@ -350,4 +415,33 @@ export const mockAdmin: AdminApi = {
   listEvents: async () => adminEvents,
   listModeration: async () => moderation,
   listReports: async () => reports,
+  setMemberStatus: async ({ id, status }) => {
+    const row = adminMembers.find((m) => m.id === id);
+    if (!row) throw new Error("Member not found");
+    row.status = status;
+    return row;
+  },
+  moderate: async ({ id, action }) => {
+    const item = moderation.find((m) => m.id === id);
+    if (!item) throw new Error("Item not found");
+    item.status = action === "approve" ? "approved" : "rejected";
+    return item;
+  },
+  analytics: async () => analytics,
+  generateReport: async ({ range }) => {
+    const factor = range === "7d" ? 0.25 : range === "30d" ? 1 : 2.8;
+    return {
+      id: `rep-${range}-${Date.now()}`,
+      range,
+      generatedAt: new Date().toISOString(),
+      rows: [
+        { id: "g1", label: "New members", value: Math.round(480 * factor).toLocaleString() },
+        { id: "g2", label: "Events held", value: String(Math.max(1, Math.round(9 * factor))) },
+        { id: "g3", label: "Articles published", value: String(Math.max(1, Math.round(24 * factor))) },
+        { id: "g4", label: "Mentorship sessions", value: String(Math.max(1, Math.round(31 * factor))) },
+        { id: "g5", label: "Moderation actions", value: String(Math.max(1, Math.round(7 * factor))) },
+      ],
+    };
+  },
 };
+
