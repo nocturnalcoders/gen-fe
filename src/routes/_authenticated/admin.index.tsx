@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { api } from "@/api";
 import type { AdminMemberStatus, AdminReportRange } from "@/api/types";
 
-export const Route = createFileRoute("/_authenticated/admin")({
+export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminPage,
   head: () => ({
     meta: [
