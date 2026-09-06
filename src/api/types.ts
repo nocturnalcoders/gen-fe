@@ -230,7 +230,7 @@ export type DashboardSummary = {
     progress: number;
     nextSession: string;
   } | null;
-  recommendedMentors: { id: ID; name: string; role: string; matchedOn: string[] }[];
+  recommendedMentors: RecommendedMentor[];
   communityUpdates: CommunityUpdate[];
 };
 
