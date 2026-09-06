@@ -190,8 +190,8 @@ const notifications: NotificationsApi = {
 };
 
 const dashboard: DashboardApi = {
-  feed: () => http.get<FeedPost[]>("/dashboard/feed"),
-  summary: () => http.get<DashboardSummary>("/dashboard/summary"),
+  feed: (query) => http.get<FeedPost[]>("/dashboard/feed", query),
+  summary: (query) => http.get<DashboardSummary>("/dashboard/summary", query),
 };
 
 const admin: AdminApi = {
@@ -200,6 +200,10 @@ const admin: AdminApi = {
   listEvents: () => http.get("/admin/events"),
   listModeration: () => http.get("/admin/moderation"),
   listReports: () => http.get("/admin/reports"),
+  setMemberStatus: ({ id, status }) => http.patch(`/admin/members/${id}`, { status }),
+  moderate: ({ id, action }) => http.post(`/admin/moderation/${id}/${action}`),
+  analytics: () => http.get("/admin/analytics"),
+  generateReport: ({ range }) => http.post("/admin/reports/generate", { range }),
 };
 
 export const restApi: ApiClient = {

@@ -3,6 +3,7 @@
 // implementation later requires no UI changes.
 
 import type {
+  AdminAnalytics,
   AdminApi,
   AdminEventRow,
   AdminMemberRow,
