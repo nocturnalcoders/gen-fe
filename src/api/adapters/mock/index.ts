@@ -302,7 +302,7 @@ const summary: DashboardSummary = {
     progress: 60,
     nextSession: new Date(Date.now() + 3 * 864e5).toISOString(),
   },
-  recommendedMentors: mentors.slice(0, 3).map((m) => ({ id: m.id, name: m.name, role: m.role, matchedOn: m.tags.slice(0, 2) })),
+  recommendedMentors: [],
   communityUpdates: [
     { id: "cu1", text: "Singapore chapter passed 1,100 members", topic: "Singapore" },
     { id: "cu2", text: "New immigration guide published for the Netherlands", topic: "Immigration" },
