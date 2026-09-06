@@ -400,9 +400,39 @@ export type DashboardApi = {
   summary: (query?: PersonalizationQuery) => Promise<DashboardSummary>;
 };
 
+export type AdminMentorshipRecord = {
+  id: ID;
+  mentorName: string;
+  status: MentorshipRequestStatus;
+  progress: number;
+  startedAt: string;
+  nextSessionAt: string | null;
+  /** Set when nextSessionAt is in the past and the session was not held. */
+  overdueDays: number | null;
+  sessions: { id: ID; title: string; heldAt: string; notes: string | null }[];
+  goals: Goal[];
+};
+
+export type AdminMemberDetail = {
+  member: AdminMemberRow;
+  headline: string | null;
+  skills: string[];
+  interests: string[];
+  mentorships: AdminMentorshipRecord[];
+  totals: {
+    mentorships: number;
+    sessions: number;
+    avgProgress: number;
+    overdueSessions: number;
+    goalsCompleted: number;
+    goalsTotal: number;
+  };
+};
+
 export type AdminApi = {
   stats: () => Promise<AdminStats>;
   listMembers: () => Promise<AdminMemberRow[]>;
+  memberDetail: (id: ID) => Promise<AdminMemberDetail>;
   listEvents: () => Promise<AdminEventRow[]>;
   listModeration: () => Promise<ModerationItem[]>;
   listReports: () => Promise<AdminReport[]>;
