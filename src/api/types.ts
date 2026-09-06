@@ -380,8 +380,8 @@ export type NotificationsApi = {
 };
 
 export type DashboardApi = {
-  feed: () => Promise<FeedPost[]>;
-  summary: () => Promise<DashboardSummary>;
+  feed: (query?: PersonalizationQuery) => Promise<FeedPost[]>;
+  summary: (query?: PersonalizationQuery) => Promise<DashboardSummary>;
 };
 
 export type AdminApi = {
@@ -390,7 +390,12 @@ export type AdminApi = {
   listEvents: () => Promise<AdminEventRow[]>;
   listModeration: () => Promise<ModerationItem[]>;
   listReports: () => Promise<AdminReport[]>;
+  setMemberStatus: (input: { id: ID; status: AdminMemberStatus }) => Promise<AdminMemberRow>;
+  moderate: (input: { id: ID; action: "approve" | "reject" }) => Promise<ModerationItem>;
+  analytics: () => Promise<AdminAnalytics>;
+  generateReport: (input: { range: AdminReportRange }) => Promise<AdminGeneratedReport>;
 };
+
 
 export interface ApiClient {
   auth: AuthApi;
