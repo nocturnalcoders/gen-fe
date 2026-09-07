@@ -312,6 +312,30 @@ export type AdminGeneratedReport = {
   rows: AdminReport[];
 };
 
+export type AdminMentorSessionRow = {
+  mentorId: ID;
+  mentorName: string;
+  mentorships: number;
+  sessions: number;
+  avgDurationMinutes: number;
+  avgProgress: number;
+  /** 0-100 compatibility score across this mentor's mentees */
+  matchScore: number;
+  overdueSessions: number;
+};
+
+export type AdminSessionReport = {
+  totals: {
+    sessions: number;
+    mentorships: number;
+    avgDurationMinutes: number;
+    overdueSessions: number;
+  };
+  mentors: AdminMentorSessionRow[];
+};
+
+
+
 
 // ---------------------------------------------------------------------------
 // The API surface. Every adapter (cloud / rest / mock) implements this.
