@@ -211,7 +211,9 @@ const admin: AdminApi = {
   setMemberStatus: ({ id, status }) => http.patch(`/admin/members/${id}`, { status }),
   moderate: ({ id, action }) => http.post(`/admin/moderation/${id}/${action}`),
   analytics: () => http.get("/admin/analytics"),
+  sessionReport: () => http.get("/admin/session-report"),
   generateReport: ({ range }) => http.post("/admin/reports/generate", { range }),
+
 };
 
 export const restApi: ApiClient = {
