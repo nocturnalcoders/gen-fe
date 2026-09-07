@@ -449,6 +449,8 @@ export type AdminApi = {
   moderate: (input: { id: ID; action: "approve" | "reject" }) => Promise<ModerationItem>;
   analytics: () => Promise<AdminAnalytics>;
   generateReport: (input: { range: AdminReportRange }) => Promise<AdminGeneratedReport>;
+  sessionReport: () => Promise<AdminSessionReport>;
+
 };
 
 
