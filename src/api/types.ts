@@ -118,7 +118,16 @@ export type MentorshipSession = {
   title: string;
   heldAt: string;
   notes: string | null;
+  durationMinutes?: number;
 };
+
+export type MentorshipRequestInput = {
+  mentorId: ID;
+  message: string;
+  goals?: string[];
+  nextSessionAt?: string | null;
+};
+
 
 export type Goal = {
   id: ID;
