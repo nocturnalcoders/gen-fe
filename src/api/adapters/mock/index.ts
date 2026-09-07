@@ -716,6 +716,11 @@ export const mockAdmin: AdminApi = {
     return item;
   },
   analytics: async () => analytics,
+  sessionReport: async () => ({
+    totals: { sessions: 0, mentorships: 0, avgDurationMinutes: 0, overdueSessions: 0 },
+    mentors: [],
+  }),
+
   generateReport: async ({ range }) => {
     const factor = range === "7d" ? 0.25 : range === "30d" ? 1 : 2.8;
     return {

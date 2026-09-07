@@ -118,7 +118,16 @@ export type MentorshipSession = {
   title: string;
   heldAt: string;
   notes: string | null;
+  durationMinutes?: number;
 };
+
+export type MentorshipRequestInput = {
+  mentorId: ID;
+  message: string;
+  goals?: string[];
+  nextSessionAt?: string | null;
+};
+
 
 export type Goal = {
   id: ID;
@@ -303,6 +312,30 @@ export type AdminGeneratedReport = {
   rows: AdminReport[];
 };
 
+export type AdminMentorSessionRow = {
+  mentorId: ID;
+  mentorName: string;
+  mentorships: number;
+  sessions: number;
+  avgDurationMinutes: number;
+  avgProgress: number;
+  /** 0-100 compatibility score across this mentor's mentees */
+  matchScore: number;
+  overdueSessions: number;
+};
+
+export type AdminSessionReport = {
+  totals: {
+    sessions: number;
+    mentorships: number;
+    avgDurationMinutes: number;
+    overdueSessions: number;
+  };
+  mentors: AdminMentorSessionRow[];
+};
+
+
+
 
 // ---------------------------------------------------------------------------
 // The API surface. Every adapter (cloud / rest / mock) implements this.
@@ -364,7 +397,7 @@ export type MentorshipApi = {
   listMentors: (query?: { q?: string }) => Promise<Mentor[]>;
   getMentor: (id: ID) => Promise<Mentor | null>;
   listRequests: () => Promise<MentorshipRequest[]>;
-  createRequest: (input: { mentorId: ID; message: string }) => Promise<MentorshipRequest>;
+  createRequest: (input: MentorshipRequestInput) => Promise<MentorshipRequest>;
   listSessions: () => Promise<MentorshipSession[]>;
   listGoals: () => Promise<Goal[]>;
 };
@@ -440,6 +473,8 @@ export type AdminApi = {
   moderate: (input: { id: ID; action: "approve" | "reject" }) => Promise<ModerationItem>;
   analytics: () => Promise<AdminAnalytics>;
   generateReport: (input: { range: AdminReportRange }) => Promise<AdminGeneratedReport>;
+  sessionReport: () => Promise<AdminSessionReport>;
+
 };
 
 
