@@ -94,6 +94,215 @@ export type Database = {
         }
         Relationships: []
       }
+      mentors: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          name: string
+          profile_id: string | null
+          rating: number
+          role: string
+          sessions: number
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          profile_id?: string | null
+          rating?: number
+          role: string
+          sessions?: number
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          profile_id?: string | null
+          rating?: number
+          role?: string
+          sessions?: number
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentors_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentorship_goals: {
+        Row: {
+          created_at: string
+          id: string
+          progress: number
+          request_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          progress?: number
+          request_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          progress?: number
+          request_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentorship_goals_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "mentorship_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentorship_requests: {
+        Row: {
+          created_at: string
+          id: string
+          mentee_id: string
+          mentor_id: string
+          message: string | null
+          next_session_at: string | null
+          progress: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mentee_id: string
+          mentor_id: string
+          message?: string | null
+          next_session_at?: string | null
+          progress?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mentee_id?: string
+          mentor_id?: string
+          message?: string | null
+          next_session_at?: string | null
+          progress?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentorship_requests_mentee_id_fkey"
+            columns: ["mentee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentorship_requests_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentorship_sessions: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          held_at: string
+          id: string
+          notes: string | null
+          request_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          held_at?: string
+          id?: string
+          notes?: string | null
+          request_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          held_at?: string
+          id?: string
+          notes?: string | null
+          request_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentorship_sessions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "mentorship_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          dedupe_key: string | null
+          id: string
+          kind: string
+          read: boolean
+          text: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          kind?: string
+          read?: boolean
+          text: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          kind?: string
+          read?: boolean
+          text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -206,7 +415,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_overdue_session_notifications: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
