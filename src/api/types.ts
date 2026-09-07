@@ -373,7 +373,7 @@ export type MentorshipApi = {
   listMentors: (query?: { q?: string }) => Promise<Mentor[]>;
   getMentor: (id: ID) => Promise<Mentor | null>;
   listRequests: () => Promise<MentorshipRequest[]>;
-  createRequest: (input: { mentorId: ID; message: string }) => Promise<MentorshipRequest>;
+  createRequest: (input: MentorshipRequestInput) => Promise<MentorshipRequest>;
   listSessions: () => Promise<MentorshipSession[]>;
   listGoals: () => Promise<Goal[]>;
 };
