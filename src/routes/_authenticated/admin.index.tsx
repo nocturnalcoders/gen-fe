@@ -144,6 +144,7 @@ function AdminPage() {
           </TabsTrigger>
           <TabsTrigger value="analytics" className="rounded-full px-4">Analytics</TabsTrigger>
           <TabsTrigger value="reports" className="rounded-full px-4">Reports</TabsTrigger>
+          <TabsTrigger value="sessions" className="rounded-full px-4">Laporan sesi</TabsTrigger>
         </TabsList>
 
         <TabsContent value="members" className="mt-6">
@@ -168,7 +169,15 @@ function AdminPage() {
                 )}
                 {(membersQuery.data ?? []).map((m) => (
                   <tr key={m.id}>
-                    <td className="p-4 font-medium">{m.name}</td>
+                    <td className="p-4 font-medium">
+                      <Link
+                        to="/admin/members/$id"
+                        params={{ id: m.id }}
+                        className="text-primary hover:underline"
+                      >
+                        {m.name}
+                      </Link>
+                    </td>
                     <td className="p-4 text-muted-foreground">{m.country}</td>
                     <td className="p-4 text-muted-foreground">{formatDate(m.joined)}</td>
                     <td className="p-4">
