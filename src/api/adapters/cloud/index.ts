@@ -16,15 +16,13 @@ import type {
   Session,
   ThreadsApi,
 } from "../../types";
+import { mockArticles, mockDiaspora, mockMembers } from "../mock/index";
 import {
-  mockAdmin,
-  mockArticles,
-  mockDashboard,
-  mockDiaspora,
-  mockMembers,
-  mockMentorship,
-  mockNotifications,
-} from "../mock/index";
+  cloudAdmin,
+  cloudDashboard,
+  cloudMentorship,
+  cloudNotifications,
+} from "./mentorship";
 
 type SupabaseUser = { id: string; email?: string | null; user_metadata?: Record<string, unknown> };
 
@@ -352,10 +350,10 @@ export const cloudApi: ApiClient = {
   registrations,
   threads,
   members: mockMembers,
-  mentorship: mockMentorship,
+  mentorship: cloudMentorship,
   articles: mockArticles,
   diaspora: mockDiaspora,
-  notifications: mockNotifications,
-  dashboard: mockDashboard,
-  admin: mockAdmin,
+  notifications: cloudNotifications,
+  dashboard: cloudDashboard,
+  admin: cloudAdmin,
 };
