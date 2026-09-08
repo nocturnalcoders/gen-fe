@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BarChart3, FileText, Flag, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -51,6 +51,10 @@ function AdminPage() {
   });
   const reportsQuery = useQuery({ queryKey: ["admin", "reports"], queryFn: () => api.admin.listReports() });
   const analyticsQuery = useQuery({ queryKey: ["admin", "analytics"], queryFn: () => api.admin.analytics() });
+  const sessionReportQuery = useQuery({
+    queryKey: ["admin", "session-report"],
+    queryFn: () => api.admin.sessionReport(),
+  });
 
   const statusMutation = useMutation({
     mutationFn: (input: { id: string; status: AdminMemberStatus }) => api.admin.setMemberStatus(input),
