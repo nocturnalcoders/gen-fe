@@ -392,6 +392,84 @@ function AdminPage() {
             )}
           </Card>
         </TabsContent>
+
+        <TabsContent value="sessions" className="mt-6 space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { label: "Total sesi", value: sessionReportQuery.data?.totals.sessions ?? 0 },
+              { label: "Mentorship aktif", value: sessionReportQuery.data?.totals.mentorships ?? 0 },
+              {
+                label: "Durasi rata-rata",
+                value: `${sessionReportQuery.data?.totals.avgDurationMinutes ?? 0} mnt`,
+              },
+              { label: "Sesi terlambat", value: sessionReportQuery.data?.totals.overdueSessions ?? 0 },
+            ].map((t) => (
+              <Card key={t.label} className="glass rounded-2xl border-border/50 p-5 shadow-soft">
+                <div className="text-xs text-muted-foreground">{t.label}</div>
+                <div className="mt-1 text-2xl font-bold">
+                  {sessionReportQuery.isLoading ? <Skeleton className="h-7 w-16" /> : t.value}
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="glass overflow-x-auto rounded-2xl border-border/50 shadow-soft">
+            <table className="w-full min-w-[720px] text-sm">
+              <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="p-4">Mentor</th>
+                  <th className="p-4">Mentorship</th>
+                  <th className="p-4">Sesi</th>
+                  <th className="p-4">Durasi rata-rata</th>
+                  <th className="p-4">Progress</th>
+                  <th className="p-4">Skor kecocokan</th>
+                  <th className="p-4">Terlambat</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {sessionReportQuery.isLoading && (
+                  <tr>
+                    <td className="p-4" colSpan={7}>
+                      <Skeleton className="h-5 w-full" />
+                    </td>
+                  </tr>
+                )}
+                {!sessionReportQuery.isLoading &&
+                  (sessionReportQuery.data?.mentors ?? []).length === 0 && (
+                    <tr>
+                      <td className="p-6 text-center text-muted-foreground" colSpan={7}>
+                        Belum ada data sesi mentorship.
+                      </td>
+                    </tr>
+                  )}
+                {(sessionReportQuery.data?.mentors ?? []).map((m) => (
+                  <tr key={m.mentorId}>
+                    <td className="p-4 font-medium">{m.mentorName}</td>
+                    <td className="p-4 text-muted-foreground">{m.mentorships}</td>
+                    <td className="p-4 text-muted-foreground">{m.sessions}</td>
+                    <td className="p-4 text-muted-foreground">{m.avgDurationMinutes} mnt</td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Progress value={m.avgProgress} className="w-24" />
+                        <span className="text-xs text-muted-foreground">{m.avgProgress}%</span>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <Badge variant="secondary">{m.matchScore}%</Badge>
+                    </td>
+                    <td className="p-4">
+                      {m.overdueSessions > 0 ? (
+                        <Badge variant="destructive">{m.overdueSessions}</Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </TabsContent>
       </Tabs>
     </PageShell>
   );
