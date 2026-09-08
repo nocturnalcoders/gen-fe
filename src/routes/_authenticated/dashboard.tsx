@@ -121,8 +121,11 @@ function Dashboard() {
                 <Settings2 className="mr-2 size-4" /> Tune interests
               </Link>
             </Button>
-            <Button asChild>
+            <Button variant="outline" asChild>
               <Link to="/articles">Write an article</Link>
+            </Button>
+            <Button asChild>
+              <Link to="/request-mentorship">Ajukan mentorship</Link>
             </Button>
           </div>
         }
@@ -278,7 +281,11 @@ function Dashboard() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No active mentorship yet — <Link to="/mentorship" className="text-primary">find a mentor</Link>.
+                No active mentorship yet —{" "}
+                <Link to="/request-mentorship" className="text-primary">
+                  ajukan mentorship
+                </Link>
+                .
               </p>
             )}
           </Card>
@@ -312,7 +319,7 @@ function Dashboard() {
                     ))}
                   </ul>
                   <Button size="sm" variant="outline" className="mt-2 h-7 w-full text-xs" asChild>
-                    <Link to="/mentorship">Connect</Link>
+                    <Link to="/request-mentorship">Connect</Link>
                   </Button>
                 </li>
               ))}
