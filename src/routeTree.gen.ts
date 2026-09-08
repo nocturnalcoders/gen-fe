@@ -21,6 +21,7 @@ import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as ActivegenIndexRouteImport } from './routes/activegen.index'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as ActivegenIdRouteImport } from './routes/activegen.$id'
+import { Route as AuthenticatedRequestMentorshipRouteImport } from './routes/_authenticated/request-mentorship'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -87,6 +88,12 @@ const ActivegenIdRoute = ActivegenIdRouteImport.update({
   path: '/activegen/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRequestMentorshipRoute =
+  AuthenticatedRequestMentorshipRouteImport.update({
+    id: '/request-mentorship',
+    path: '/request-mentorship',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -132,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/request-mentorship': typeof AuthenticatedRequestMentorshipRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
   '/activegen/': typeof ActivegenIndexRoute
@@ -150,6 +158,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/request-mentorship': typeof AuthenticatedRequestMentorshipRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
   '/activegen': typeof ActivegenIndexRoute
@@ -171,6 +180,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/request-mentorship': typeof AuthenticatedRequestMentorshipRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
   '/activegen/': typeof ActivegenIndexRoute
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/notifications'
     | '/profile'
+    | '/request-mentorship'
     | '/activegen/$id'
     | '/events/$id'
     | '/activegen/'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/notifications'
     | '/profile'
+    | '/request-mentorship'
     | '/activegen/$id'
     | '/events/$id'
     | '/activegen'
@@ -230,6 +242,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
+    | '/_authenticated/request-mentorship'
     | '/activegen/$id'
     | '/events/$id'
     | '/activegen/'
@@ -339,6 +352,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ActivegenIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/request-mentorship': {
+      id: '/_authenticated/request-mentorship'
+      path: '/request-mentorship'
+      fullPath: '/request-mentorship'
+      preLoaderRoute: typeof AuthenticatedRequestMentorshipRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -402,6 +422,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedRequestMentorshipRoute: typeof AuthenticatedRequestMentorshipRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -409,6 +430,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedRequestMentorshipRoute: AuthenticatedRequestMentorshipRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
