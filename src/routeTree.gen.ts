@@ -19,6 +19,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as ActivegenIndexRouteImport } from './routes/activegen.index'
+import { Route as MentorsIdRouteImport } from './routes/mentors.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as ActivegenIdRouteImport } from './routes/activegen.$id'
 import { Route as AuthenticatedRequestMentorshipRouteImport } from './routes/_authenticated/request-mentorship'
@@ -76,6 +77,11 @@ const EventsIndexRoute = EventsIndexRouteImport.update({
 const ActivegenIndexRoute = ActivegenIndexRouteImport.update({
   id: '/activegen/',
   path: '/activegen/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MentorsIdRoute = MentorsIdRouteImport.update({
+  id: '/mentors/$id',
+  path: '/mentors/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsIdRoute = EventsIdRouteImport.update({
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/request-mentorship': typeof AuthenticatedRequestMentorshipRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
+  '/mentors/$id': typeof MentorsIdRoute
   '/activegen/': typeof ActivegenIndexRoute
   '/events/': typeof EventsIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/request-mentorship': typeof AuthenticatedRequestMentorshipRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
+  '/mentors/$id': typeof MentorsIdRoute
   '/activegen': typeof ActivegenIndexRoute
   '/events': typeof EventsIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/_authenticated/request-mentorship': typeof AuthenticatedRequestMentorshipRoute
   '/activegen/$id': typeof ActivegenIdRoute
   '/events/$id': typeof EventsIdRoute
+  '/mentors/$id': typeof MentorsIdRoute
   '/activegen/': typeof ActivegenIndexRoute
   '/events/': typeof EventsIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/request-mentorship'
     | '/activegen/$id'
     | '/events/$id'
+    | '/mentors/$id'
     | '/activegen/'
     | '/events/'
     | '/admin/'
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/request-mentorship'
     | '/activegen/$id'
     | '/events/$id'
+    | '/mentors/$id'
     | '/activegen'
     | '/events'
     | '/admin'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/_authenticated/request-mentorship'
     | '/activegen/$id'
     | '/events/$id'
+    | '/mentors/$id'
     | '/activegen/'
     | '/events/'
     | '/_authenticated/admin/'
@@ -262,6 +274,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ActivegenIdRoute: typeof ActivegenIdRoute
   EventsIdRoute: typeof EventsIdRoute
+  MentorsIdRoute: typeof MentorsIdRoute
   ActivegenIndexRoute: typeof ActivegenIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
 }
@@ -336,6 +349,13 @@ declare module '@tanstack/react-router' {
       path: '/activegen'
       fullPath: '/activegen/'
       preLoaderRoute: typeof ActivegenIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mentors/$id': {
+      id: '/mentors/$id'
+      path: '/mentors/$id'
+      fullPath: '/mentors/$id'
+      preLoaderRoute: typeof MentorsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events/$id': {
@@ -447,6 +467,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ActivegenIdRoute: ActivegenIdRoute,
   EventsIdRoute: EventsIdRoute,
+  MentorsIdRoute: MentorsIdRoute,
   ActivegenIndexRoute: ActivegenIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
 }
