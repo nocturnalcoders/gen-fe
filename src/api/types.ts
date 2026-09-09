@@ -98,6 +98,31 @@ export type Mentor = {
   avatarUrl: string | null;
 };
 
+export type MentorTestimonial = {
+  id: ID;
+  mentorId: ID;
+  authorName: string;
+  authorRole: string | null;
+  quote: string;
+  rating: number;
+  createdAt: string;
+};
+
+export type MentorProfile = {
+  mentor: Mentor;
+  /** 0-100 compatibility score for the signed-in member (0 when signed out) */
+  score: number;
+  matchedOn: string[];
+  stats: {
+    totalSessions: number;
+    avgDurationMinutes: number;
+    activeMentorships: number;
+    avgProgress: number;
+  };
+  sessions: MentorshipSession[];
+  testimonials: MentorTestimonial[];
+};
+
 export type MentorshipRequestStatus = "pending" | "accepted" | "declined" | "completed";
 
 export type MentorshipRequest = {
@@ -396,6 +421,8 @@ export type MembersApi = {
 export type MentorshipApi = {
   listMentors: (query?: { q?: string }) => Promise<Mentor[]>;
   getMentor: (id: ID) => Promise<Mentor | null>;
+  getMentorProfile: (id: ID) => Promise<MentorProfile | null>;
+  addTestimonial: (input: { mentorId: ID; quote: string; rating: number }) => Promise<MentorTestimonial>;
   listRequests: () => Promise<MentorshipRequest[]>;
   createRequest: (input: MentorshipRequestInput) => Promise<MentorshipRequest>;
   listSessions: () => Promise<MentorshipSession[]>;
