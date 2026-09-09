@@ -26,6 +26,8 @@ import type {
   Member,
   MembersApi,
   Mentor,
+  MentorProfile,
+  MentorTestimonial,
   MentorshipApi,
   MentorshipRequest,
   MentorshipSession,
@@ -154,6 +156,9 @@ const members: MembersApi = {
 const mentorship: MentorshipApi = {
   listMentors: (query) => http.get<Mentor[]>("/mentors", query),
   getMentor: (id) => http.get<Mentor | null>(`/mentors/${id}`),
+  getMentorProfile: (id) => http.get<MentorProfile | null>(`/mentors/${id}/profile`),
+  addTestimonial: ({ mentorId, ...body }) =>
+    http.post<MentorTestimonial>(`/mentors/${mentorId}/testimonials`, body),
   listRequests: () => http.get<MentorshipRequest[]>("/mentorship/requests"),
   createRequest: (input) => http.post<MentorshipRequest>("/mentorship/requests", input),
   listSessions: () => http.get<MentorshipSession[]>("/mentorship/sessions"),

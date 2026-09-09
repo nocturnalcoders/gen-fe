@@ -180,6 +180,32 @@ export const mockMentorship: MentorshipApi = {
     return mentors.filter((m) => [m.name, m.role, ...m.tags].join(" ").toLowerCase().includes(q));
   },
   getMentor: async (id) => mentors.find((m) => m.id === id) ?? null,
+  getMentorProfile: async (id) => {
+    const mentor = mentors.find((m) => m.id === id);
+    if (!mentor) return null;
+    return {
+      mentor,
+      score: Math.min(100, 60 + Math.round(mentor.rating * 6)),
+      matchedOn: mentor.tags.slice(0, 3),
+      stats: {
+        totalSessions: mentor.sessions,
+        avgDurationMinutes: 60,
+        activeMentorships: 2,
+        avgProgress: 45,
+      },
+      sessions: [],
+      testimonials: [],
+    };
+  },
+  addTestimonial: async ({ mentorId, quote, rating }) => ({
+    id: `t${Date.now()}`,
+    mentorId,
+    authorName: "You",
+    authorRole: null,
+    quote,
+    rating,
+    createdAt: new Date().toISOString(),
+  }),
   listRequests: async () => requests,
   createRequest: async ({ mentorId, message }) => {
     const mentor = mentors.find((m) => m.id === mentorId);

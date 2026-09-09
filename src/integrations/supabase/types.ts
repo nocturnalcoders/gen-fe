@@ -94,6 +94,57 @@ export type Database = {
         }
         Relationships: []
       }
+      mentor_testimonials: {
+        Row: {
+          author_id: string | null
+          author_name: string
+          author_role: string | null
+          created_at: string
+          id: string
+          mentor_id: string
+          quote: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name: string
+          author_role?: string | null
+          created_at?: string
+          id?: string
+          mentor_id: string
+          quote: string
+          rating?: number
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string
+          author_role?: string | null
+          created_at?: string
+          id?: string
+          mentor_id?: string
+          quote?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentor_testimonials_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentor_testimonials_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mentors: {
         Row: {
           avatar_url: string | null

@@ -96,6 +96,127 @@ export const cloudMentorship: MentorshipApi = {
     if (error) throw new Error(error.message);
     return data ? toMentor(data as Row) : null;
   },
+  getMentorProfile: async (id) => {
+    const { data: mentorRow, error } = await supabase
+      .from("mentors")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!mentorRow) return null;
+    const mentor = toMentor(mentorRow as Row);
+
+    const [{ data: reqRows }, { data: testimonialRows }] = await Promise.all([
+      supabase.from("mentorship_requests").select("id, status, progress").eq("mentor_id", id),
+      supabase
+        .from("mentor_testimonials")
+        .select("*")
+        .eq("mentor_id", id)
+        .order("created_at", { ascending: false }),
+    ]);
+
+    const requests = (reqRows ?? []) as Row[];
+    const ids = requests.map((r) => r['id'] as string);
+    const { data: sessionRows } = ids.length
+      ? await supabase
+          .from("mentorship_sessions")
+          .select("*")
+          .in("request_id", ids)
+          .order("held_at", { ascending: false })
+      : { data: [] as Row[] };
+    const sessions = ((sessionRows ?? []) as Row[]).map(toSession);
+
+    // Compatibility score against the signed-in member's interests & skills.
+    let matchedOn: string[] = [];
+    let score = 0;
+    try {
+      const userId = await currentUserId();
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("skills, interests")
+        .eq("id", userId)
+        .maybeSingle();
+      const p = (profile ?? {}) as Row;
+      const wanted = [...(p['interests'] ?? []), ...(p['skills'] ?? [])] as string[];
+      const haystack = [...mentor.tags, mentor.role].join(" ").toLowerCase();
+      matchedOn = wanted.filter((w) => w && haystack.includes(w.toLowerCase()));
+      const progressAvg = requests.length
+        ? requests.reduce((s, r) => s + (r['progress'] ?? 0), 0) / requests.length
+        : 0;
+      score = matchScore(
+        mentor.tags,
+        mentor.role,
+        mentor.rating,
+        progressAvg,
+        (p['interests'] ?? []) as string[],
+        (p['skills'] ?? []) as string[],
+      );
+    } catch {
+      score = 0;
+    }
+
+    const durations = sessions.map((s) => s.durationMinutes ?? 60);
+    return {
+      mentor,
+      score,
+      matchedOn: matchedOn.slice(0, 4),
+      stats: {
+        totalSessions: sessions.length,
+        avgDurationMinutes: durations.length
+          ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+          : 0,
+        activeMentorships: requests.filter((r) =>
+          ["pending", "accepted"].includes(r['status'] ?? ""),
+        ).length,
+        avgProgress: requests.length
+          ? Math.round(requests.reduce((s, r) => s + (r['progress'] ?? 0), 0) / requests.length)
+          : 0,
+      },
+      sessions,
+      testimonials: ((testimonialRows ?? []) as Row[]).map((t) => ({
+        id: t['id'],
+        mentorId: t['mentor_id'],
+        authorName: t['author_name'],
+        authorRole: t['author_role'] ?? null,
+        quote: t['quote'],
+        rating: Number(t['rating'] ?? 5),
+        createdAt: t['created_at'],
+      })),
+    };
+  },
+  addTestimonial: async ({ mentorId, quote, rating }) => {
+    const userId = await currentUserId();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name, headline, role")
+      .eq("id", userId)
+      .maybeSingle();
+    const p = (profile ?? {}) as Row;
+    const { data, error } = await supabase
+      .from("mentor_testimonials")
+      .insert({
+        mentor_id: mentorId,
+        author_id: userId,
+        author_name: p['display_name'] ?? "Anggota Garuda",
+        author_role: p['headline'] ?? p['role'] ?? null,
+        quote,
+        rating,
+      })
+      .select("*")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error("Testimoni gagal disimpan.");
+    const t = data as Row;
+    return {
+      id: t['id'],
+      mentorId: t['mentor_id'],
+      authorName: t['author_name'],
+      authorRole: t['author_role'] ?? null,
+      quote: t['quote'],
+      rating: Number(t['rating'] ?? 5),
+      createdAt: t['created_at'],
+    };
+  },
   listRequests: async () => {
     const userId = await currentUserId();
     const { data, error } = await supabase

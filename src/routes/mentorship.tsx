@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Search, Target } from "lucide-react";
 import { toast } from "sonner";
@@ -111,13 +111,20 @@ function MentorshipPage() {
                         <span>{m.sessions} sessions</span>
                         <span>★ {m.rating.toFixed(1)}</span>
                       </div>
-                      <Button
-                        className="mt-4 w-full"
-                        onClick={() => createRequest.mutate(m.id)}
-                        disabled={createRequest.isPending}
-                      >
-                        Request mentorship
-                      </Button>
+                      <div className="mt-4 grid gap-2">
+                        <Button asChild variant="outline" className="w-full">
+                          <Link to="/mentors/$id" params={{ id: m.id }}>
+                            Lihat profil mentor
+                          </Link>
+                        </Button>
+                        <Button
+                          className="w-full"
+                          onClick={() => createRequest.mutate(m.id)}
+                          disabled={createRequest.isPending}
+                        >
+                          Request mentorship
+                        </Button>
+                      </div>
                     </Card>
                   ))
                 : <p className="text-sm text-muted-foreground">No mentors match your search.</p>}
