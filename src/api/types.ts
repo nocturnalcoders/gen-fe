@@ -123,7 +123,12 @@ export type MentorProfile = {
   testimonials: MentorTestimonial[];
 };
 
-export type MentorshipRequestStatus = "pending" | "accepted" | "declined" | "completed";
+export type MentorshipRequestStatus =
+  | "pending"
+  | "accepted"
+  | "declined"
+  | "postponed"
+  | "completed";
 
 export type MentorshipRequest = {
   id: ID;
@@ -158,6 +163,7 @@ export type Goal = {
   id: ID;
   title: string;
   progress: number;
+  requestId?: ID;
 };
 
 export type ArticleStatus = "draft" | "published";
@@ -489,7 +495,24 @@ export type AdminMemberDetail = {
   };
 };
 
+export type AdminMentorshipRequestRow = {
+  id: ID;
+  mentorName: string;
+  menteeId: ID;
+  menteeName: string;
+  status: MentorshipRequestStatus;
+  message: string | null;
+  nextSessionAt: string | null;
+  progress: number;
+  createdAt: string;
+};
+
 export type AdminApi = {
+  listMentorshipRequests: () => Promise<AdminMentorshipRequestRow[]>;
+  setMentorshipStatus: (input: {
+    id: ID;
+    status: MentorshipRequestStatus;
+  }) => Promise<AdminMentorshipRequestRow>;
   stats: () => Promise<AdminStats>;
   listMembers: () => Promise<AdminMemberRow[]>;
   memberDetail: (id: ID) => Promise<AdminMemberDetail>;
