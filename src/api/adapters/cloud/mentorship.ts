@@ -9,6 +9,7 @@ import type {
   AdminMemberRow,
   AdminMentorSessionRow,
   AdminMentorshipRecord,
+  AdminMentorshipRequestRow,
   AdminSessionReport,
   AppNotification,
   DashboardApi,
