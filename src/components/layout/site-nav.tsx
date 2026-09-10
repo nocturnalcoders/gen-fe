@@ -112,6 +112,7 @@ export function SiteNav() {
               ))}
               {user ? (
                 <>
+                  <Link to="/mentorship-tracking" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent">Pelacakan mentorship</Link>
                   <Link to="/profile" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent">Profile</Link>
                   <Link to="/admin" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent">Admin</Link>
                   <button onClick={() => { setOpen(false); signOut(); }} className="rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-accent">

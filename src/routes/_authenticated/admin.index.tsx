@@ -173,6 +173,12 @@ function AdminPage() {
           <TabsTrigger value="analytics" className="rounded-full px-4">Analytics</TabsTrigger>
           <TabsTrigger value="reports" className="rounded-full px-4">Reports</TabsTrigger>
           <TabsTrigger value="sessions" className="rounded-full px-4">Laporan sesi</TabsTrigger>
+          <TabsTrigger value="requests" className="rounded-full px-4">
+            Pengajuan mentorship
+            {(requestsQuery.data ?? []).filter((r) => r.status === "pending").length > 0
+              ? ` (${(requestsQuery.data ?? []).filter((r) => r.status === "pending").length})`
+              : ""}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="members" className="mt-6">
@@ -419,6 +425,70 @@ function AdminPage() {
               </div>
             )}
           </Card>
+        </TabsContent>
+
+        <TabsContent value="requests" className="mt-6 space-y-3">
+          {requestsQuery.isLoading && <Skeleton className="h-20 w-full rounded-2xl" />}
+          {!requestsQuery.isLoading && (requestsQuery.data ?? []).length === 0 && (
+            <Card className="glass rounded-2xl border-border/50 p-6 text-center text-sm text-muted-foreground shadow-soft">
+              Belum ada pengajuan mentorship.
+            </Card>
+          )}
+          {(requestsQuery.data ?? []).map((r) => (
+            <Card
+              key={r.id}
+              className="glass rounded-2xl border-border/50 p-4 shadow-soft"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium">
+                    <Link
+                      to="/admin/members/$id"
+                      params={{ id: r.menteeId }}
+                      className="text-primary hover:underline"
+                    >
+                      {r.menteeName}
+                    </Link>{" "}
+                    → {r.mentorName}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Diajukan {formatDate(r.createdAt)}
+                    {r.nextSessionAt ? ` · sesi ${formatDate(r.nextSessionAt)}` : ""}
+                  </div>
+                  {r.message && (
+                    <p className="mt-2 max-w-2xl text-xs text-muted-foreground">“{r.message}”</p>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge
+                    variant={
+                      r.status === "declined"
+                        ? "destructive"
+                        : r.status === "accepted" || r.status === "completed"
+                          ? "secondary"
+                          : "outline"
+                    }
+                  >
+                    {MENTORSHIP_STATUS_LABEL[r.status]}
+                  </Badge>
+                  {(["accepted", "postponed", "declined"] as MentorshipRequestStatus[])
+                    .filter((s) => s !== r.status)
+                    .map((s) => (
+                      <Button
+                        key={s}
+                        size="sm"
+                        variant={s === "declined" ? "destructive" : s === "accepted" ? "default" : "outline"}
+                        className="h-7 text-xs"
+                        disabled={mentorshipStatusMutation.isPending}
+                        onClick={() => mentorshipStatusMutation.mutate({ id: r.id, status: s })}
+                      >
+                        {MENTORSHIP_STATUS_LABEL[s]}
+                      </Button>
+                    ))}
+                </div>
+              </div>
+            </Card>
+          ))}
         </TabsContent>
 
         <TabsContent value="sessions" className="mt-6 space-y-4">
