@@ -11,7 +11,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { api } from "@/api";
-import type { AdminMemberStatus, AdminReportRange } from "@/api/types";
+import type {
+  AdminMemberStatus,
+  AdminReportRange,
+  MentorshipRequestStatus,
+} from "@/api/types";
+
+const MENTORSHIP_STATUS_LABEL: Record<MentorshipRequestStatus, string> = {
+  pending: "Menunggu",
+  accepted: "Diterima",
+  declined: "Ditolak",
+  postponed: "Ditunda",
+  completed: "Selesai",
+};
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminPage,
@@ -54,6 +66,22 @@ function AdminPage() {
   const sessionReportQuery = useQuery({
     queryKey: ["admin", "session-report"],
     queryFn: () => api.admin.sessionReport(),
+  });
+  const requestsQuery = useQuery({
+    queryKey: ["admin", "mentorship-requests"],
+    queryFn: () => api.admin.listMentorshipRequests(),
+  });
+
+  const mentorshipStatusMutation = useMutation({
+    mutationFn: (input: { id: string; status: MentorshipRequestStatus }) =>
+      api.admin.setMentorshipStatus(input),
+    onSuccess: (row) => {
+      toast.success(`Pengajuan ${row.menteeName}: ${MENTORSHIP_STATUS_LABEL[row.status]}`);
+      qc.invalidateQueries({ queryKey: ["admin", "mentorship-requests"] });
+      qc.invalidateQueries({ queryKey: ["admin", "session-report"] });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const statusMutation = useMutation({

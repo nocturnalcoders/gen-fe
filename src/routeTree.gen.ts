@@ -25,6 +25,7 @@ import { Route as ActivegenIdRouteImport } from './routes/activegen.$id'
 import { Route as AuthenticatedRequestMentorshipRouteImport } from './routes/_authenticated/request-mentorship'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedMentorshipTrackingRouteImport } from './routes/_authenticated/mentorship-tracking'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
@@ -111,6 +112,12 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMentorshipTrackingRoute =
+  AuthenticatedMentorshipTrackingRouteImport.update({
+    id: '/mentorship-tracking',
+    path: '/mentorship-tracking',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -143,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/mentorship-tracking': typeof AuthenticatedMentorshipTrackingRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/request-mentorship': typeof AuthenticatedRequestMentorshipRoute
@@ -163,6 +171,7 @@ export interface FileRoutesByTo {
   '/mentorship': typeof MentorshipRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/mentorship-tracking': typeof AuthenticatedMentorshipTrackingRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/request-mentorship': typeof AuthenticatedRequestMentorshipRoute
@@ -186,6 +195,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/mentorship-tracking': typeof AuthenticatedMentorshipTrackingRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/request-mentorship': typeof AuthenticatedRequestMentorshipRoute
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/dashboard'
+    | '/mentorship-tracking'
     | '/notifications'
     | '/profile'
     | '/request-mentorship'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/mentorship'
     | '/sitemap.xml'
     | '/dashboard'
+    | '/mentorship-tracking'
     | '/notifications'
     | '/profile'
     | '/request-mentorship'
@@ -251,6 +263,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
+    | '/_authenticated/mentorship-tracking'
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
     | '/_authenticated/request-mentorship'
@@ -393,6 +406,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mentorship-tracking': {
+      id: '/_authenticated/mentorship-tracking'
+      path: '/mentorship-tracking'
+      fullPath: '/mentorship-tracking'
+      preLoaderRoute: typeof AuthenticatedMentorshipTrackingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -440,6 +460,7 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedMentorshipTrackingRoute: typeof AuthenticatedMentorshipTrackingRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRequestMentorshipRoute: typeof AuthenticatedRequestMentorshipRoute
@@ -448,6 +469,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedMentorshipTrackingRoute: AuthenticatedMentorshipTrackingRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRequestMentorshipRoute: AuthenticatedRequestMentorshipRoute,
