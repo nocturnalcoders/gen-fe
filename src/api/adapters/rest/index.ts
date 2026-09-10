@@ -207,6 +207,9 @@ const dashboard: DashboardApi = {
 };
 
 const admin: AdminApi = {
+  listMentorshipRequests: () => http.get("/admin/mentorship-requests"),
+  setMentorshipStatus: ({ id, status }) =>
+    http.patch(`/admin/mentorship-requests/${id}`, { status }),
   stats: () => http.get("/admin/stats"),
   listMembers: () => http.get("/admin/members"),
   memberDetail: (id) => http.get(`/admin/members/${id}`),

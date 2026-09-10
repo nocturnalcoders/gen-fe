@@ -467,6 +467,10 @@ export type Database = {
     }
     Functions: {
       generate_overdue_session_notifications: { Args: never; Returns: number }
+      set_mentorship_status: {
+        Args: { _request_id: string; _status: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

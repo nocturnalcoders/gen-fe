@@ -124,6 +124,9 @@ function Dashboard() {
             <Button variant="outline" asChild>
               <Link to="/articles">Write an article</Link>
             </Button>
+            <Button variant="outline" asChild>
+              <Link to="/mentorship-tracking">Lacak mentorship</Link>
+            </Button>
             <Button asChild>
               <Link to="/request-mentorship">Ajukan mentorship</Link>
             </Button>
