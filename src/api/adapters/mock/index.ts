@@ -719,6 +719,10 @@ function buildMemberDetail(row: AdminMemberRow): AdminMemberDetail {
 }
 
 export const mockAdmin: AdminApi = {
+  listMentorshipRequests: async () => [],
+  setMentorshipStatus: async () => {
+    throw new Error("Konfirmasi mentorship memerlukan koneksi database.");
+  },
   stats: async () => adminStats,
   listMembers: async () => adminMembers,
   memberDetail: async (id) => {
