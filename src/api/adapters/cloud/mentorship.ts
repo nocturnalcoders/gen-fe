@@ -288,6 +288,7 @@ export const cloudMentorship: MentorshipApi = {
       id: g['id'],
       title: g['title'],
       progress: g['progress'] ?? 0,
+      requestId: g['request_id'],
     })) as Goal[];
   },
 };
@@ -574,9 +575,56 @@ async function listMembers(): Promise<AdminMemberRow[]> {
   }));
 }
 
+async function listMentorshipRequests(): Promise<AdminMentorshipRequestRow[]> {
+  const { data, error } = await supabase
+    .from("mentorship_requests")
+    .select("*, mentors(name)")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []) as Row[];
+  const menteeIds = [...new Set(rows.map((r) => r['mentee_id'] as string))];
+  const { data: profileRows } = menteeIds.length
+    ? await supabase.from("profiles").select("id, display_name").in("id", menteeIds)
+    : { data: [] as Row[] };
+  const names = new Map<string, string>(
+    ((profileRows ?? []) as Row[]).map((p) => [p['id'] as string, p['display_name'] ?? "Anggota"]),
+  );
+  return rows.map((r) => ({
+    id: r['id'],
+    mentorName: r['mentors']?.name ?? "Mentor",
+    menteeId: r['mentee_id'],
+    menteeName: names.get(r['mentee_id'] as string) ?? "Anggota",
+    status: (r['status'] ?? "pending") as MentorshipRequestStatus,
+    message: r['message'] ?? null,
+    nextSessionAt: r['next_session_at'] ?? null,
+    progress: r['progress'] ?? 0,
+    createdAt: r['created_at'],
+  }));
+}
+
+async function setMentorshipStatus({
+  id,
+  status,
+}: {
+  id: ID;
+  status: MentorshipRequestStatus;
+}): Promise<AdminMentorshipRequestRow> {
+  const { error } = await supabase.rpc("set_mentorship_status", {
+    _request_id: id,
+    _status: status,
+  });
+  if (error) throw new Error(error.message);
+  const rows = await listMentorshipRequests();
+  const updated = rows.find((r) => r.id === id);
+  if (!updated) throw new Error("Pengajuan tidak ditemukan.");
+  return updated;
+}
+
 export const cloudAdmin: AdminApi = {
   ...mockAdmin,
   listMembers,
   memberDetail,
   sessionReport,
+  listMentorshipRequests,
+  setMentorshipStatus,
 };
