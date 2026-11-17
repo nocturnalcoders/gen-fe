@@ -14,7 +14,6 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import logoAsset from "@/assets/garuda-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -116,7 +115,7 @@ function Landing() {
           <div className="relative">
             <div className="glass-strong absolute inset-0 rounded-3xl" />
             <div className="relative flex h-full flex-col items-center justify-center p-8 text-center">
-              <img src={logoAsset.url} alt="" className="h-40 w-40 drop-shadow-[0_10px_40px_oklch(0.6_0.22_35/0.55)]" />
+              <img src="/garuda-logo.png" alt="" className="h-40 w-40 drop-shadow-[0_10px_40px_oklch(0.6_0.22_35/0.55)]" />
               <p className="mt-4 max-w-xs text-sm text-white/85">
                 One garuda, one community — lifting each other higher.
               </p>

@@ -1,0 +1,8 @@
+.git
+node_modules
+.output
+.tanstack
+.nitro
+dist
+.env
+*.local

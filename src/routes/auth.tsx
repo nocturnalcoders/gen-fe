@@ -33,6 +33,16 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    // A failed Google sign-in comes back as /auth#oauth_error=<message>.
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    const oauthError = params.get("oauth_error");
+    if (oauthError) {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      toast.error(oauthError);
+    }
+  }, []);
+
+  useEffect(() => {
     const dest = () => (redirect && redirect.startsWith("/") ? redirect : "/dashboard");
     const unsubscribe = api.auth.onAuthStateChange((session) => {
       if (session) navigate({ to: dest() });
@@ -75,8 +85,8 @@ function AuthPage() {
   async function signInGoogle() {
     try {
       await api.auth.signInWithGoogle();
-    } catch {
-      toast.error("Google sign-in failed. Please try again.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Google sign-in failed. Please try again.");
     }
   }
 
@@ -131,7 +141,7 @@ function AuthPage() {
                 </div>
                 <div>
                   <Label htmlFor="su-pw">Password</Label>
-                  <Input id="su-pw" type="password" autoComplete="new-password" minLength={6} required value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <Input id="su-pw" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full" disabled={busy}>{busy ? "Creating account…" : "Create account"}</Button>
               </form>

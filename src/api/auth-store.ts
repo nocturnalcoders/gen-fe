@@ -1,4 +1,4 @@
-// Token storage for the REST adapter (your own API).
+// Token storage for the REST adapter.
 // Access token is kept in memory + localStorage so a refresh keeps the session.
 
 import type { Session } from "./types";

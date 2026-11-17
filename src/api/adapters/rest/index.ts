@@ -1,8 +1,6 @@
-// REST adapter — implements the ApiClient contract against your own API.
-// Enabled automatically when VITE_API_BASE_URL is set.
-// Endpoint shapes are documented in docs/api-contract.md.
+// REST adapter — implements the ApiClient contract against the GEN API (gen-backend).
 
-import { http } from "../../http";
+import { http, refreshSession } from "../../http";
 import { authStore } from "../../auth-store";
 import type {
   ActivitiesApi,
@@ -62,8 +60,27 @@ function poll(onChange: () => void) {
   return () => window.clearInterval(timer);
 }
 
+// Google sign-in round trip: we send a random nonce along, and the API redirects back to
+// /auth#oauth_token=...&oauth_nonce=... (or #oauth_error=..., which the auth page shows).
+const OAUTH_NONCE_KEY = "garuda.oauth_nonce";
+
+async function completeOAuthRedirect() {
+  if (typeof window === "undefined" || !window.location.hash.includes("oauth_token=")) return;
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  // Take the token out of the address bar before anything else can read or share it.
+  window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  const expected = window.sessionStorage.getItem(OAUTH_NONCE_KEY);
+  window.sessionStorage.removeItem(OAUTH_NONCE_KEY);
+  const token = params.get("oauth_token");
+  // Only accept a redirect that answers a sign-in this browser tab started.
+  if (!token || !expected || params.get("oauth_nonce") !== expected) return;
+  authStore.setSession(null, { refreshToken: token });
+  await refreshSession();
+}
+
 const auth: AuthApi = {
   getSession: async () => {
+    await completeOAuthRedirect();
     const cached = authStore.getSession();
     if (!cached) return null;
     try {
@@ -98,9 +115,11 @@ const auth: AuthApi = {
     return { needsEmailConfirmation: data.needsEmailConfirmation ?? !data.accessToken };
   },
   signInWithGoogle: async () => {
+    const nonce = crypto.randomUUID();
+    window.sessionStorage.setItem(OAUTH_NONCE_KEY, nonce);
     const { url } = await http.get<{ url: string }>(
       "/auth/oauth/google",
-      { redirectUri: window.location.origin },
+      { redirectUri: window.location.origin, nonce },
       false,
     );
     window.location.assign(url);

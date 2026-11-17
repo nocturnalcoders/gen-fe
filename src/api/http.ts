@@ -1,9 +1,12 @@
-// Fetch wrapper for the REST adapter (your own API).
+// Fetch wrapper for the REST adapter.
 // Adds the base URL, Bearer JWT, JSON handling, and a single refresh retry on 401.
 
 import { authStore } from "./auth-store";
 
-export const API_BASE_URL = (import.meta.env['VITE_API_BASE_URL'] as string | undefined) ?? "";
+// "/api" is where the gateway serves the API, on the same origin as this site.
+// In development .env.development points this at the API running locally.
+export const API_BASE_URL =
+  (import.meta.env["VITE_API_BASE_URL"] as string | undefined)?.trim() || "/api";
 
 export class ApiError extends Error {
   status: number;
@@ -46,7 +49,7 @@ async function rawRequest(path: string, opts: Options): Promise<Response> {
   });
 }
 
-async function refreshSession(): Promise<boolean> {
+export async function refreshSession(): Promise<boolean> {
   const refreshToken = authStore.getRefreshToken();
   if (!refreshToken) return false;
   const res = await rawRequest("/auth/refresh", {

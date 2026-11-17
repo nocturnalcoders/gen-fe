@@ -1,6 +1,5 @@
 // Domain types for the Garuda platform.
-// These are backend-agnostic: they describe the shape the UI consumes,
-// independent of Lovable Cloud or your own REST API.
+// They describe the shape the UI consumes; the REST adapter maps the API onto them.
 
 export type ID = string;
 export type Unsubscribe = () => void;
