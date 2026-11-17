@@ -21,7 +21,9 @@ export const Route = createFileRoute("/events/$id")({
   }),
   errorComponent: ({ error }) => (
     <PageShell>
-      <p className="text-sm text-destructive">{error.message}</p>
+      <p className="text-sm text-destructive">
+        {error instanceof Error ? error.message : String(error)}
+      </p>
     </PageShell>
   ),
   notFoundComponent: () => (
